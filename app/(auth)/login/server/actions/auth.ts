@@ -92,14 +92,8 @@ export async function loginAction(
         break;
     }
 
-    // Redirect will throw NEXT_REDIRECT which is expected
     redirect(redirectPath);
   } catch (error) {
-    // Handle redirect error separately from other errors
-    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
-      throw error; // Re-throw redirect errors
-    }
-    
     if (error instanceof z.ZodError) {
       const fieldErrors = error.flatten().fieldErrors;
       const processedErrors: Record<string, string[]> = {};
@@ -174,11 +168,6 @@ export async function signupAction(
     // Redirect to customer dashboard (new users are customers by default)
     redirect('/dashboard');
   } catch (error) {
-    // Handle redirect error separately from other errors
-    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
-      throw error; // Re-throw redirect errors
-    }
-    
     if (error instanceof z.ZodError) {
       const fieldErrors = error.flatten().fieldErrors;
       const processedErrors: Record<string, string[]> = {};
@@ -237,11 +226,6 @@ export async function forgotPasswordAction(
       message: 'Password reset email sent successfully',
     };
   } catch (error) {
-    // Handle redirect error separately from other errors
-    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
-      throw error; // Re-throw redirect errors
-    }
-    
     if (error instanceof z.ZodError) {
       const fieldErrors = error.flatten().fieldErrors;
       const processedErrors: Record<string, string[]> = {};

@@ -6,6 +6,7 @@ const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-k
 
 // Define route permissions
 const routePermissions: Record<string, UserRole[]> = {
+  '/': ['customer'],
   '/admin': ['admin'],
   '/manager': ['admin', 'manager'],
   '/driver': ['admin', 'manager', 'driver'],
@@ -31,7 +32,7 @@ const protectedRoutes = [
 ];
 
 // Public routes that should redirect to dashboard if authenticated
-const authRoutes = ['/login', '/signup', '/forgot-password'];
+const authRoutes = ['/', '/results', '/login', '/signup', '/forgot-password'];
 
 async function verifyToken(token: string): Promise<User | null> {
   try {
