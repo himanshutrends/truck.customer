@@ -19,15 +19,15 @@ const routePermissions: Record<string, UserRole[]> = {
 
 // Protected routes that require authentication
 const protectedRoutes = [
-  '/dashboard',
-  '/profile',
-  '/bookings',
+  // '/dashboard',
+  // '/profile',
+  // '/bookings',
   '/admin',
-  '/manager',
-  '/driver',
-  '/trucks',
-  '/users',
-  '/reports',
+  // '/manager',
+  // '/driver',
+  // '/trucks',
+  // '/users',
+  // '/reports',
 ];
 
 // Public routes that should redirect to dashboard if authenticated
