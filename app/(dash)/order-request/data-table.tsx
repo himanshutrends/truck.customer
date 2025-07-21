@@ -14,18 +14,12 @@ import {
   IconPlus,
   IconWallet,
   IconArrowRight,
-  IconTruck,
-  IconAdjustments,
-  IconAdjustmentsFilled,
-  IconBox,
-  IconCircleCheckFilled,
-  IconTrendingUp,
-  IconAlertCircle,
-  IconAlertCircleFilled,
-  IconUsers,
-  IconReceipt,
-  IconFileText,
-  IconFileTypePdf,
+  IconPackageExport,
+  IconSearch,
+  IconFilter,
+  IconCalendar,
+  IconArrowUp,
+  IconShip,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import {
@@ -51,6 +45,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ModalForm } from "@/components/modal-form";
+import { AddOrderRequestForm } from "./add-form";
 
 import { z } from "zod";
 
@@ -86,12 +82,16 @@ import {
 
 export const schema = z.object({
   id: z.string(),
-  companyName: z.string(),
-  date: z.string(),
-  paymentStatus: z.enum(["Pending", "Advance Paid", "Completed"]),
+  route: z.object({
+    from: z.string(),
+    to: z.string(),
+  }),
+  pickup: z.string(),
+  arrival: z.string(),
+  weight: z.string(),
   fee: z.string(),
-  remaining: z.string(),
-  invoice: z.string(),
+  vehicle: z.string(),
+  status: z.string(),
 });
 
 const columns: ColumnDef<z.infer<typeof schema>>[] = [
@@ -122,79 +122,119 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "companyName",
-    header: "COMPANY NAME",
+    accessorKey: "route",
+    header: () => (
+      <div className="flex items-center gap-1">
+        ROUTE
+        <IconArrowUp className="h-3 w-3" />
+      </div>
+    ),
     cell: ({ row }) => (
-      <Link href={`/invoice/${row.original.id}`} className="font-medium text-blue-600 hover:text-blue-800 hover:underline">
-        {row.original.companyName}
+      <Link 
+        href={`/order-request/${row.original.id}`}
+        className="font-medium hover:underline"
+      >
+        <div className="flex items-center gap-2">
+          <span>{row.original.route.from}</span>
+          <IconArrowRight className="h-4 w-4 text-muted-foreground" />
+          <span>{row.original.route.to}</span>
+        </div>
       </Link>
     ),
     enableHiding: false,
   },
   {
-    accessorKey: "date",
-    header: "DATE",
+    accessorKey: "pickup",
+    header: () => (
+      <div className="flex items-center gap-1">
+        PICKUP
+        <IconArrowUp className="h-3 w-3" />
+      </div>
+    ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.original.date}</div>
+      <div className="font-medium">{row.original.pickup}</div>
     ),
   },
   {
-    accessorKey: "paymentStatus",
-    header: "PAYMENT STATUS",
-    cell: ({ row }) => {
-      const status = row.original.paymentStatus
-      let badgeClass = ""
-      
-      switch (status) {
-        case "Completed":
-          badgeClass = "bg-green-50 text-green-600 border-green-200 dark:bg-green-900 dark:text-green-300"
-          break
-        case "Advance Paid":
-          badgeClass = "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900 dark:text-blue-300"
-          break
-        case "Pending":
-          badgeClass = "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900 dark:text-orange-300"
-          break
-        default:
-          badgeClass = "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900 dark:text-gray-300"
-      }
-      
-      return (
-        <Badge variant="outline" className={`px-3 py-1 ${badgeClass}`}>
-          {status}
-        </Badge>
-      )
-    },
+    accessorKey: "arrival",
+    header: () => (
+      <div className="flex items-center gap-1">
+        ARRIVAL
+        <IconArrowUp className="h-3 w-3" />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="font-medium">{row.original.arrival}</div>
+    ),
+  },
+  {
+    accessorKey: "weight",
+    header: () => (
+      <div className="flex items-center gap-1">
+        WT.
+        <IconArrowUp className="h-3 w-3" />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="font-medium">{row.original.weight}</div>
+    ),
   },
   {
     accessorKey: "fee",
-    header: "FEE",
+    header: () => (
+      <div className="flex items-center gap-1">
+        FEE
+        <IconArrowUp className="h-3 w-3" />
+      </div>
+    ),
     cell: ({ row }) => (
       <div className="font-medium">{row.original.fee}</div>
     ),
   },
   {
-    accessorKey: "remaining",
-    header: "REMAINING",
+    accessorKey: "vehicle",
+    header: () => (
+      <div className="flex items-center gap-1">
+        VEHICLE
+        <IconArrowUp className="h-3 w-3" />
+      </div>
+    ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.original.remaining}</div>
+      <div className="font-medium">{row.original.vehicle}</div>
     ),
   },
   {
-    accessorKey: "invoice",
-    header: "INVOICE",
+    accessorKey: "status",
+    header: () => (
+      <div className="flex items-center gap-1">
+        STATUS
+        <IconArrowUp className="h-3 w-3" />
+      </div>
+    ),
     cell: ({ row }) => {
-      const invoice = row.original.invoice
-      return invoice === "-" ? (
-        <div className="font-medium">-</div>
-      ) : (
-        <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-6 h-6 bg-red-100 rounded">
-            <IconFileTypePdf className="h-4 w-4 text-red-600" />
-          </div>
-          <span className="font-medium text-sm">{invoice}</span>
-        </div>
-      )
+      const status = row.original.status
+      
+      if (status === "2 REQUESTS") {
+        return (
+          <Badge variant="outline" className="px-2 py-1 bg-green-50 text-green-600 border-green-200 dark:bg-green-900 dark:text-green-300">
+            {status}
+          </Badge>
+        )
+      } else if (status === "Pending") {
+        return (
+          <Badge variant="outline" className="px-2 py-1 bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900 dark:text-orange-300">
+            {status}
+          </Badge>
+        )
+      } else if (status === "-") {
+        return <div className="font-medium">-</div>
+      } else {
+        return (
+          <Badge variant="outline" className="px-2 py-1 bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900 dark:text-gray-300">
+            {status}
+          </Badge>
+        )
+      }
     },
   },
   {
@@ -213,10 +253,10 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
           <DropdownMenuItem>View Details</DropdownMenuItem>
-          <DropdownMenuItem>Download PDF</DropdownMenuItem>
-          <DropdownMenuItem>Send Email</DropdownMenuItem>
+          <DropdownMenuItem>Edit Request</DropdownMenuItem>
+          <DropdownMenuItem>Duplicate</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Remove</DropdownMenuItem>
+          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
@@ -228,93 +268,131 @@ export function DataTable({
 }: {
   data: z.infer<typeof schema>[];
 }) {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [data, setData] = React.useState(() =>
     initialData.length > 0
       ? initialData
       : [
           {
-            id: "12344",
-            companyName: "Ram Enterprises",
-            date: "20 Nov 2024",
-            paymentStatus: "Pending" as const,
+            id: "00112233HEM",
+            route: {
+              from: "Jaipur, Rajasthan",
+              to: "New Delhi"
+            },
+            pickup: "26 Jan 2024",
+            arrival: "26 Jan 2024",
+            weight: "12 tn",
             fee: "₹28,000",
-            remaining: "₹14,000",
-            invoice: "invoice_12344_hne",
+            vehicle: "TATA Ace",
+            status: "2 REQUESTS"
           },
           {
-            id: "12345",
-            companyName: "Bharat Logistics",
-            date: "22 Nov 2024",
-            paymentStatus: "Completed" as const,
+            id: "order002",
+            route: {
+              from: "Chinnwara, MP",
+              to: "New Delhi"
+            },
+            pickup: "29 Jan 2024",
+            arrival: "29 Jan 2024",
+            weight: "740 tn",
             fee: "₹1,64,000",
-            remaining: "₹0",
-            invoice: "invoice_12345_tkn",
+            vehicle: "TATA Ace",
+            status: "Pending"
           },
           {
-            id: "12346",
-            companyName: "Swift Transport",
-            date: "25 Nov 2024",
-            paymentStatus: "Advance Paid" as const,
+            id: "order003",
+            route: {
+              from: "Guwahati, Assam",
+              to: "Chandigarh"
+            },
+            pickup: "31 Jan 2024",
+            arrival: "31 Jan 2024",
+            weight: "120 tn",
             fee: "₹1,10,700",
-            remaining: "₹50,700",
-            invoice: "invoice_12346_xyz",
+            vehicle: "TATA Ace",
+            status: "-"
           },
           {
-            id: "invoice004",
-            companyName: "GreenTech Inn.",
-            date: "3 Mar 2024",
-            paymentStatus: "Advance Paid" as const,
+            id: "order004",
+            route: {
+              from: "Pune, Maharashtra",
+              to: "Mumbai"
+            },
+            pickup: "3 Mar 2024",
+            arrival: "3 Mar 2024",
+            weight: "60 tn",
             fee: "₹75,000",
-            remaining: "₹25,000",
-            invoice: "invoice_gmtraders_15jul",
+            vehicle: "Ashok Leyland",
+            status: "-"
           },
           {
-            id: "invoice005",
-            companyName: "HealthSync Tech...",
-            date: "21 Mar 2024",
-            paymentStatus: "Completed" as const,
-            fee: "₹32,000",
-            remaining: "-",
-            invoice: "invoice_gmtraders_16jul",
+            id: "order005",
+            route: {
+              from: "Bhopal, MP",
+              to: "Indore"
+            },
+            pickup: "21 Mar 2024",
+            arrival: "21 Mar 2024",
+            weight: "90 tn",
+            fee: "-",
+            vehicle: "-",
+            status: "-"
           },
           {
-            id: "invoice006",
-            companyName: "AquaPure Systems",
-            date: "10 Sep 2024",
-            paymentStatus: "Completed" as const,
-            fee: "₹2,00,000",
-            remaining: "-",
-            invoice: "invoice_gmtraders_17jul",
+            id: "order006",
+            route: {
+              from: "Kolkata, West Bengal",
+              to: "Bhubaneswar"
+            },
+            pickup: "10 Sep 2024",
+            arrival: "10 Sep 2024",
+            weight: "45 tn",
+            fee: "-",
+            vehicle: "-",
+            status: "-"
           },
           {
-            id: "invoice007",
-            companyName: "NestGen Energy",
-            date: "16 Sep 2024",
-            paymentStatus: "Completed" as const,
-            fee: "₹1,25,000",
-            remaining: "-",
-            invoice: "invoice_gmtraders_18jul",
+            id: "order007",
+            route: {
+              from: "Surat, Gujarat",
+              to: "Ahmedabad"
+            },
+            pickup: "16 Sep 2024",
+            arrival: "16 Sep 2024",
+            weight: "12 tn",
+            fee: "-",
+            vehicle: "-",
+            status: "-"
           },
           {
-            id: "invoice008",
-            companyName: "DataSphere Analytics",
-            date: "30 Dec 2024",
-            paymentStatus: "Completed" as const,
+            id: "order008",
+            route: {
+              from: "Lucknow, UP",
+              to: "Noida"
+            },
+            pickup: "30 Dec 2024",
+            arrival: "30 Dec 2024",
+            weight: "56 tn",
             fee: "₹1,50,000",
-            remaining: "-",
-            invoice: "invoice_gmtraders_19jul",
+            vehicle: "TATA Ace",
+            status: "-"
           },
           {
-            id: "invoice009",
-            companyName: "SolarBright Energy",
-            date: "01 Jan 2025",
-            paymentStatus: "Completed" as const,
-            fee: "₹47,500",
-            remaining: "-",
-            invoice: "invoice_gmtraders_20jul",
+            id: "order009",
+            route: {
+              from: "Hyderabad, Telangana",
+              to: "Bengaluru"
+            },
+            pickup: "01 Jan 2025",
+            arrival: "01 Jan 2025",
+            weight: "109 tn",
+            fee: "-",
+            vehicle: "-",
+            status: "-"
           },
         ]
   );
+
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -327,8 +405,51 @@ export function DataTable({
     pageSize: 10,
   });
 
+  // Filter states
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [timeFilter, setTimeFilter] = React.useState("This Week");
+
+  // Handle form submission
+  const handleOrderRequestSubmit = (formData: any) => {
+    // Generate a new order request ID
+    const newId = `order${String(data.length + 1).padStart(3, '0')}`;
+    
+    // Create new order request from form data
+    const newOrderRequest = {
+      id: newId,
+      route: {
+        from: formData.pickup_location,
+        to: formData.destination
+      },
+      pickup: formData.pickup_date,
+      arrival: formData.arrival_date,
+      weight: formData.weight,
+      fee: formData.price ? `₹${formData.price}` : "-",
+      vehicle: formData.vehicle_type || "-",
+      status: "Pending"
+    };
+    
+    // Add to the data array
+    setData(prevData => [newOrderRequest, ...prevData]);
+  };
+
+  // Filtered data based on search query
+  const filteredData = React.useMemo(() => {
+    if (!searchQuery) return data;
+    
+    return data.filter((item) => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        item.route.from.toLowerCase().includes(searchLower) ||
+        item.route.to.toLowerCase().includes(searchLower) ||
+        item.vehicle.toLowerCase().includes(searchLower) ||
+        item.status.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [data, searchQuery]);
+
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     state: {
       sorting,
@@ -357,34 +478,50 @@ export function DataTable({
       <CardHeader>
         <div className="flex items-center gap-4">
           <div className="flex h-10 w-10 items-center rounded-lg bg-primary/10 p-2">
-            <IconReceipt className="size-6 text-primary" />
+            <IconPackageExport className="size-6 text-primary" />
           </div>
           <div className="">
-            <CardTitle>Invoices</CardTitle>
+            <CardTitle>Order Requests</CardTitle>
           </div>
         </div>
         <CardAction className="flex items-center gap-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Input
-                type="text"
-                placeholder="Search invoices..."
-                className="h-8 w-[197px]"
-                value={
-                  (table.getColumn("companyName")?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) =>
-                  table.getColumn("companyName")?.setFilterValue(event.target.value)
-                }
-              />
+              <div className="relative">
+                <IconSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search"
+                  className="h-8 w-[197px] pl-8"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                />
+              </div>
               <Button variant="outline" size="sm">
-                <IconAdjustmentsFilled />
+                <IconFilter className="h-4 w-4" />
                 <span className="hidden lg:inline">Filter</span>
-                <span className="lg:hidden">Filter</span>
               </Button>
+              <Select value={timeFilter} onValueChange={setTimeFilter}>
+                <SelectTrigger className="max-h-8 w-fit">
+                  <div className="flex items-center gap-2">
+                    <IconCalendar className="h-4 w-4" />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="This Week">This Week</SelectItem>
+                  <SelectItem value="This Month">This Month</SelectItem>
+                  <SelectItem value="Last Month">Last Month</SelectItem>
+                  <SelectItem value="This Year">This Year</SelectItem>
+                </SelectContent>
+              </Select>
               <Button variant="outline" size="sm">
-                <IconFileExport />
+                <IconFileExport className="h-4 w-4" />
                 <span className="hidden lg:inline">Export</span>
+              </Button>
+              <Button variant="default" size="sm" onClick={() => setIsModalOpen(true)}>
+                <IconPlus className="h-4 w-4" />
+                Create New Request
               </Button>
               <Button variant="outline" size="icon" className="size-8">
                 <IconDots />
@@ -522,6 +659,17 @@ export function DataTable({
           </div>
         </div>
       </CardContent>
+      <ModalForm
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        title="Create New Shipment Request"
+        showBackButton={true}
+      >
+        <AddOrderRequestForm 
+          onSubmit={handleOrderRequestSubmit} 
+          onCancel={() => setIsModalOpen(false)} 
+        />
+      </ModalForm>
     </Card>
   );
 }

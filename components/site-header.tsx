@@ -5,12 +5,13 @@ import { NavUser } from "./nav-user"
 import { IconBell, IconPlus, IconSearch } from "@tabler/icons-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Input } from "./ui/input"
+import { ModeToggle } from "./mode-toggle"
 
 const data = {
   user: {
     name: "Himanshu",
     position: "Administrator",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "/profile.png",
   },
 }
 
@@ -51,6 +52,8 @@ export function SiteHeader({ title = "Dashboard" }: { title?: string }) {
               <Button variant="outline" size="icon">
                 <IconPlus className="h-5 w-5" />
               </Button>
+
+              <ModeToggle />
           <NavUser user={data.user} /> 
         </div>
       </div>

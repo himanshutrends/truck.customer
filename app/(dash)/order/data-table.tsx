@@ -184,19 +184,19 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
        
        switch (status) {
          case "Delivered":
-           badgeClass = "bg-green-50 text-green-600 border-green-200"
+           badgeClass = "bg-green-50 text-green-600 border-green-200 dark:bg-green-900 dark:text-green-300"
            icon = <IconCircleCheckFilled className="h-3 w-3" />
            break
          case "Pending":
-           badgeClass = "bg-yellow-50 text-yellow-600 border-yellow-200"
+           badgeClass = "bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-300"
            icon = <IconAlertCircleFilled className="h-3 w-3" />
            break
          case "Shipping":
-           badgeClass = "bg-blue-50 text-blue-600 border-blue-200"
+           badgeClass = "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900 dark:text-blue-300"
            icon = <IconTrendingUp className="h-3 w-3" />
            break
          default:
-           badgeClass = "bg-gray-50 text-gray-600 border-gray-200"
+           badgeClass = "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900 dark:text-gray-300"
            icon = <IconBox className="h-3 w-3" />
        }
        

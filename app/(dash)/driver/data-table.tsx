@@ -202,19 +202,19 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       
       switch (status) {
         case "Available":
-          badgeClass = "bg-green-50 text-green-600 border-green-200"
+          badgeClass = "bg-green-50 text-green-600 border-green-200 dark:bg-green-900 dark:text-green-300"
           icon = <IconCircleCheckFilled className="h-3 w-3" />
           break
         case "Unavailable":
-          badgeClass = "bg-red-50 text-red-600 border-red-200"
+          badgeClass = "bg-red-50 text-red-600 border-red-200 dark:bg-red-900 dark:text-red-300"
           icon = <IconCircleOff className="h-3 w-3" />
           break
         case "On Leave":
-          badgeClass = "bg-orange-50 text-orange-600 border-orange-200"
+          badgeClass = "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900 dark:text-orange-300"
           icon = <IconPlane className="h-3 w-3" />
           break
         default:
-          badgeClass = "bg-gray-50 text-gray-600 border-gray-200"
+          badgeClass = "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900 dark:text-gray-300"
           icon = <IconBox className="h-3 w-3" />
       }
       

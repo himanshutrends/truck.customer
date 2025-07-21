@@ -63,7 +63,7 @@ export function NavSecondary({
                 const isActive = isItemActive(item.url);
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={isActive} className={isActive ? "bg-primary/10! text-primary!" : ""}>
+                    <SidebarMenuButton tooltip={item.title} asChild isActive={isActive} className={isActive ? "bg-primary/10! text-primary!" : ""}>
                       <a href={item.url}>
                           <item.icon />
                           <span>{item.title}</span>
@@ -79,7 +79,7 @@ export function NavSecondary({
                 );
               })}
             </SidebarMenu>
-          </SidebarGroupContent>{" "}
+          </SidebarGroupContent>
         </CollapsibleContent>
       </SidebarGroup>
     </Collapsible>

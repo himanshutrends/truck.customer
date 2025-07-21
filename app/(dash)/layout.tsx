@@ -24,6 +24,21 @@ function getPageTitle(pathname: string): string {
     return "Driver Details"
   }
   
+  // Handle order-request detail pages (e.g., /order-request/00112233HEM)
+  if (segments.length === 2 && segments[0] === 'order-request') {
+    return "My Orders Requests/Detail"
+  }
+  
+  // Handle order-request list page
+  if (segments.length === 1 && segments[0] === 'order-request') {
+    return "My Orders Requests"
+  }
+  
+  // Handle order detail pages (e.g., /order/00112233HEM)
+  if (segments.length === 2 && segments[0] === 'order') {
+    return "Order Details"
+  }
+  
   const lastSegment = segments[segments.length - 1]
   
   // Convert kebab-case to Title Case
