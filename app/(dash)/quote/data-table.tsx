@@ -130,7 +130,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         <div className="flex items-center gap-3">
           <span className="font-medium">{row.original.companyName}</span>
           {isRenegotiated && (
-            <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 text-xs px-2 py-0.5">
+            <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 text-xs px-2 py-0.5 dark:bg-green-900 dark:text-green-300">
               Renegotiated
             </Badge>
           )}

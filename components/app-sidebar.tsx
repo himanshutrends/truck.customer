@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   IconCamera,
   IconTruck,
@@ -25,10 +25,13 @@ import {
   IconTicket,
   IconChartArcs3,
   IconReceipt,
-} from "@tabler/icons-react"
+  IconPackageExport,
+  IconChevronRight,
+  IconTruckDelivery,
+} from "@tabler/icons-react";
 
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import { NavSecondary } from "@/components/nav-secondary";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -37,10 +40,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const data = {
- 
   navGroups: [
     {
       label: "MAIN MENU",
@@ -55,6 +57,11 @@ const data = {
           title: "Orders",
           url: "/order",
           icon: IconBox,
+        },
+        {
+          title: "Order Requests",
+          url: "/order-request",
+          icon: IconPackageExport,
         },
         {
           title: "Search Shipments",
@@ -88,7 +95,7 @@ const data = {
       items: [
         {
           title: "Analytics",
-          url: "/analytic",
+          url: "/analytics",
           icon: IconChartArcs3,
         },
         {
@@ -104,12 +111,11 @@ const data = {
       ],
     },
   ],
- 
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -118,7 +124,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#">
-                <IconTruck className="!size-5" />
+                <IconTruckDelivery className="!size-5 text-primary" />
                 <span className="text-base font-semibold">Trucking Trucks</span>
               </a>
             </SidebarMenuButton>
@@ -131,7 +137,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ))}
       </SidebarContent>
       <SidebarFooter>
+         <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            asChild
+            tooltip="Search Shipments"
+            className="data-[slot=sidebar-menu-button]:!p-1.5 data-[slot=sidebar-menu-button]:!bg-accent"
+          >
+            <a href="/search-shipments">
+              <IconSearch className="!size-5" />
+              <span className="font-semibold">Search Shipments</span>
+              <IconChevronRight className="!size-5 ml-auto" />
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
