@@ -1,78 +1,42 @@
 'use client';
 
-import React from 'react';
-import { Card } from '@/components/ui/card';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FiltersPanel } from '@/components/filters-panel';
 import { VehicleCard } from '@/components/vehicle-card';
-
-const ResultsSearchForm: React.FC = () => {
-  return (
-    <Card className="p-6 mb-6">
-      <div className="flex flex-col lg:flex-row gap-4">
-        {/* Quick Search Inputs */}
-        <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label className="text-sm font-medium text-neutral-900 mb-2 block">Origin</label>
-            <Input 
-              placeholder="Mumbai"
-              defaultValue="Mumbai"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-neutral-900 mb-2 block">Destination</label>
-            <Input 
-              placeholder="Delhi"
-              defaultValue="Delhi"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-neutral-900 mb-2 block">Departure Date</label>
-            <Input 
-              type="date"
-              defaultValue="2024-01-15"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-neutral-900 mb-2 block">Vehicle Type</label>
-            <Select defaultValue="all">
-              <SelectTrigger>
-                <SelectValue placeholder="All Vehicles" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Vehicles</SelectItem>
-                <SelectItem value="tata-ace">TATA Ace</SelectItem>
-                <SelectItem value="ashok-leyland">Ashok Leyland</SelectItem>
-                <SelectItem value="volvo">Volvo S440</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        {/* Search Button */}
-        <div className="flex items-end">
-          <Button className="px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white">
-            Search
-          </Button>
-        </div>
-      </div>
-    </Card>
-  );
-};
+import { SearchForm } from '@/components/search-form';
 
 // Sample vehicle data matching the Figma design
 const sampleVehicles = [
   {
     id: '1',
-    name: 'Ashok Leyland Dost Plus',
-    description: 'Reliable heavy-duty truck for long distance transportation with excellent fuel efficiency and cargo capacity.',
-    image: '/truck.jpg',
+    name: 'Mearsk Shipping',
+    badge: 'Fastest Delivery',
+    price: '₹28,000',
+    vehicleType: 'Heavy Truck',
+    maxWeight: '80 tonnes',
+    model: 'Mercedes FreightMaster X2000',
+    gpsNumber: '#33HEM 56',
+    estimatedDelivery: '26 January 2025',
+    route: {
+      from: 'Delhi',
+      to: 'Chinnwara',
+      price: '₹10,000'
+    },
+    weight: {
+      amount: '80 tonnes',
+      rate: '₹1000 x 80',
+      total: '₹80,00'
+    },
+    deliveryType: {
+      type: 'Express',
+      price: '₹1000'
+    },
+    total: '₹28,000',
     specs: {
-      loadCapacity: '1.5 Ton',
-      dimensions: '10 x 6 x 4 ft',
+      loadCapacity: '80 Ton',
+      dimensions: '20 x 8 x 8 ft',
       fuelType: 'Diesel',
       yearOfManufacture: '2020',
       kmDriven: '85,000 km',
@@ -92,12 +56,32 @@ const sampleVehicles = [
   },
   {
     id: '2',
-    name: 'TATA Ace Gold',
-    description: 'Compact and efficient mini truck perfect for city deliveries and medium distance transportation.',
-    image: '/truck.jpg',
+    name: 'Swift Logistics',
+    badge: 'Best Value',
+    price: '₹22,500',
+    vehicleType: 'Medium Truck',
+    maxWeight: '50 tonnes',
+    model: 'TATA Prima 2528.K',
+    gpsNumber: '#42ABC 89',
+    estimatedDelivery: '28 January 2025',
+    route: {
+      from: 'Delhi',
+      to: 'Chinnwara',
+      price: '₹8,500'
+    },
+    weight: {
+      amount: '50 tonnes',
+      rate: '₹800 x 50',
+      total: '₹40,00'
+    },
+    deliveryType: {
+      type: 'Standard',
+      price: '₹500'
+    },
+    total: '₹22,500',
     specs: {
-      loadCapacity: '750 kg',
-      dimensions: '8 x 5 x 3.5 ft',
+      loadCapacity: '50 Ton',
+      dimensions: '18 x 7 x 7 ft',
       fuelType: 'Diesel',
       yearOfManufacture: '2021',
       kmDriven: '45,000 km',
@@ -117,12 +101,31 @@ const sampleVehicles = [
   },
   {
     id: '3',
-    name: 'Volvo S440 Heavy Duty',
-    description: 'Premium heavy-duty truck with advanced safety features and superior comfort for long haul transportation.',
-    image: '/truck.jpg',
+    name: 'Premium Freight Co.',
+    price: '₹35,000',
+    vehicleType: 'Heavy Truck',
+    maxWeight: '100 tonnes',
+    model: 'Volvo FH16 750',
+    gpsNumber: '#67XYZ 12',
+    estimatedDelivery: '25 January 2025',
+    route: {
+      from: 'Delhi',
+      to: 'Chinnwara',
+      price: '₹12,000'
+    },
+    weight: {
+      amount: '100 tonnes',
+      rate: '₹1200 x 100',
+      total: '₹1,20,00'
+    },
+    deliveryType: {
+      type: 'Premium Express',
+      price: '₹2000'
+    },
+    total: '₹35,000',
     specs: {
-      loadCapacity: '25 Ton',
-      dimensions: '20 x 8 x 8 ft',
+      loadCapacity: '100 Ton',
+      dimensions: '22 x 8.5 x 9 ft',
       fuelType: 'Diesel',
       yearOfManufacture: '2019',
       kmDriven: '1,20,000 km',
@@ -143,10 +146,42 @@ const sampleVehicles = [
 ];
 
 export default function ResultsPage() {
+  const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
+
+  const handleVehicleSelection = (vehicleId: string, selected: boolean) => {
+    setSelectedVehicles(prev => {
+      if (selected) {
+        return [...prev, vehicleId];
+      } else {
+        return prev.filter(id => id !== vehicleId);
+      }
+    });
+  };
+
+  const handleGetQuotation = () => {
+    if (selectedVehicles.length === 0) {
+      alert('Please select at least one vehicle to get a quotation.');
+      return;
+    }
+    
+    const selectedVehicleData = sampleVehicles.filter(vehicle => 
+      selectedVehicles.includes(vehicle.id)
+    );
+    
+    console.log('Selected vehicles for quotation:', selectedVehicleData);
+    alert(`Getting quotation for ${selectedVehicles.length} selected vehicle(s)`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
+      <div className='absolute top-0 left-0 right-0 bg-primary h-26 z-0'>
+        </div>
+      <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+
+        {/* Search Form */}
+        <SearchForm onSearch={(data) => console.log('Search data:', data)} />
+
+         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-neutral-900 mb-2">
             Available Trucks - Mumbai to Delhi
@@ -154,8 +189,21 @@ export default function ResultsPage() {
           <div className="flex items-center justify-between">
             <p className="text-neutral-600">
               Showing 156 available vehicles for your route
+              {selectedVehicles.length > 0 && (
+                <span className="ml-2 text-blue-600 font-medium">
+                  ({selectedVehicles.length} selected)
+                </span>
+              )}
             </p>
             <div className="flex items-center gap-4">
+              {selectedVehicles.length > 0 && (
+                <Button 
+                  onClick={handleGetQuotation}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Get Quotation for {selectedVehicles.length} Vehicle(s)
+                </Button>
+              )}
               <span className="text-sm text-neutral-600">Sort by:</span>
               <Select defaultValue="price-low">
                 <SelectTrigger className="w-40">
@@ -172,9 +220,6 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* Quick Search Form */}
-        <ResultsSearchForm />
-
         {/* Main Content Layout */}
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Filters Sidebar */}
@@ -184,7 +229,12 @@ export default function ResultsPage() {
           <div className="flex-1">
             <div className="space-y-6">
               {sampleVehicles.map((vehicle) => (
-                <VehicleCard key={vehicle.id} vehicle={vehicle} />
+                <VehicleCard 
+                  key={vehicle.id} 
+                  vehicle={vehicle} 
+                  isSelected={selectedVehicles.includes(vehicle.id)}
+                  onSelectionChange={handleVehicleSelection}
+                />
               ))}
               
               {/* Load More Button */}

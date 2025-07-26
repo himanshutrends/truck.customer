@@ -1,11 +1,26 @@
+'use client';
+
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { DualRangeSlider } from '@/components/ui/dual-range-slider';
+import { ChevronDown, Info } from 'lucide-react';
 
 export const FiltersPanel: React.FC = () => {
   const [selectedVehicles, setSelectedVehicles] = useState(['ashok-leyland']);
+  const [priceRange, setPriceRange] = useState([0, 28000]);
+  const [fromPrice, setFromPrice] = useState('₹0');
+  const [toPrice, setToPrice] = useState('₹28,000');
+  const [dimensions, setDimensions] = useState('22 | 45 | 21');
+  const [numberOfBoxes, setNumberOfBoxes] = useState('34');
+  
+  // Collapsible states
+  const [isVehicleTypesOpen, setIsVehicleTypesOpen] = useState(true);
+  const [isPriceRangeOpen, setIsPriceRangeOpen] = useState(true);
+  const [isLoadCapacityOpen, setIsLoadCapacityOpen] = useState(true);
 
   const vehicleTypes = [
     { id: 'tata-ace', label: 'TATA Ace' },
@@ -15,139 +30,212 @@ export const FiltersPanel: React.FC = () => {
     { id: 'ashok-leyland', label: 'Ashok Leyland' },
   ];
 
-  const handleVehicleChange = (vehicleId: string) => {
+  const handleVehicleChange = (vehicleId: string, checked: boolean) => {
     setSelectedVehicles(prev => 
-      prev.includes(vehicleId) 
-        ? prev.filter(id => id !== vehicleId)
-        : [...prev, vehicleId]
+      checked 
+        ? [...prev, vehicleId]
+        : prev.filter(id => id !== vehicleId)
     );
   };
 
-  return (
-    <div className="w-64 space-y-6">
-      {/* Filters Header */}
-      <div>
-        <h2 className="text-lg font-bold text-black">Filters</h2>
-      </div>
+  const handlePriceRangeChange = (values: number[]) => {
+    setPriceRange(values);
+    setFromPrice(`₹${values[0].toLocaleString()}`);
+    setToPrice(`₹${values[1].toLocaleString()}`);
+  };
 
-      {/* Vehicle Types */}
-      <Card className="p-4">
-        <div className="space-y-4">
+  return (
+    <TooltipProvider>
+      <div className="w-64 space-y-4">
+        {/* Filters Header */}
+        <div>
+          <h2 className="text-lg font-bold text-black">Filters</h2>
+        </div>
+
+        {/* Vehicle Types Section */}
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-neutral-900">VEHICLE TYPES</h3>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <button
+              onClick={() => setIsVehicleTypesOpen(!isVehicleTypesOpen)}
+              className="p-1"
+            >
+              <ChevronDown 
+                className={`h-4 w-4 transition-transform ${
+                  isVehicleTypesOpen ? 'rotate-180' : ''
+                }`} 
+              />
+            </button>
           </div>
           
-          <div className="space-y-3">
-            {vehicleTypes.map((vehicle) => (
-              <div key={vehicle.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={vehicle.id}
-                  checked={selectedVehicles.includes(vehicle.id)}
-                  onCheckedChange={() => handleVehicleChange(vehicle.id)}
-                />
-                <label
-                  htmlFor={vehicle.id}
-                  className="text-sm font-medium text-neutral-900 cursor-pointer"
-                >
-                  {vehicle.label}
-                </label>
-              </div>
-            ))}
-          </div>
-          
-          <Button variant="link" className="text-sm text-neutral-900 underline p-0">
-            Show More...
-          </Button>
+          {isVehicleTypesOpen && (
+            <div className="space-y-3">
+              {vehicleTypes.map((vehicle) => (
+                <div key={vehicle.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={vehicle.id}
+                    checked={selectedVehicles.includes(vehicle.id)}
+                    onCheckedChange={(checked) => handleVehicleChange(vehicle.id, checked as boolean)}
+                  />
+                  <label
+                    htmlFor={vehicle.id}
+                    className="text-sm font-medium text-neutral-900 cursor-pointer"
+                  >
+                    {vehicle.label}
+                  </label>
+                </div>
+              ))}
+              
+              <Button variant="link" className="text-sm text-neutral-900 underline p-0 h-auto">
+                Show More...
+              </Button>
+            </div>
+          )}
         </div>
-      </Card>
 
-      {/* Price Range */}
-      <Card className="p-4">
-        <div className="space-y-4">
+        <Separator />
+
+        {/* Price Range Section */}
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-neutral-900">PRICE RANGE</h3>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <button
+              onClick={() => setIsPriceRangeOpen(!isPriceRangeOpen)}
+              className="p-1"
+            >
+              <ChevronDown 
+                className={`h-4 w-4 transition-transform ${
+                  isPriceRangeOpen ? 'rotate-180' : ''
+                }`} 
+              />
+            </button>
           </div>
           
-          <div className="space-y-2">
-            <div>
-              <label className="text-sm font-medium text-neutral-900">From</label>
-              <Input defaultValue="₹0" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-neutral-900">To</label>
-              <Input defaultValue="₹28,000" />
-            </div>
-          </div>
-          
-          {/* Price Range Slider */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm">0</span>
-            <div className="flex-1 relative">
-              <div className="w-full h-1.5 bg-gray-200 rounded-full">
-                <div className="w-1/3 h-full bg-blue-600 rounded-full"></div>
+          {isPriceRangeOpen && (
+            <div className="space-y-3">
+              {/* From Input */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-neutral-900">From</label>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-4 w-4 text-neutral-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Minimum price for your shipment</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input 
+                  value={fromPrice} 
+                  onChange={(e) => setFromPrice(e.target.value)}
+                  className="w-full"
+                />
               </div>
-              <div className="absolute left-0 top-0 w-6 h-6 bg-white border-2 border-blue-600 rounded-full transform -translate-y-1/2"></div>
-              <div className="absolute left-1/3 top-0 w-6 h-6 bg-blue-600 rounded-full transform -translate-y-1/2 flex items-center justify-center">
-                <span className="text-xs text-white">28000</span>
+              
+              {/* To Input */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-neutral-900">To</label>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-4 w-4 text-neutral-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Maximum price for your shipment</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input 
+                  value={toPrice} 
+                  onChange={(e) => setToPrice(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              
+              {/* Price Range Slider */}
+              <div className="mt-8">
+                <DualRangeSlider
+                  label={(value) => `₹${value?.toLocaleString() || '0'}`}
+                  value={priceRange}
+                  onValueChange={handlePriceRangeChange}
+                  min={0}
+                  max={200000}
+                  step={1000}
+                />
               </div>
             </div>
-            <span className="text-sm">2L</span>
-          </div>
+          )}
         </div>
-      </Card>
 
-      {/* Load Capacity */}
-      <Card className="p-4">
-        <div className="space-y-4">
+        <Separator />
+
+        {/* Load Capacity Section */}
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-neutral-900">LOAD CAPACITY</h3>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <button
+              onClick={() => setIsLoadCapacityOpen(!isLoadCapacityOpen)}
+              className="p-1"
+            >
+              <ChevronDown 
+                className={`h-4 w-4 transition-transform ${
+                  isLoadCapacityOpen ? 'rotate-180' : ''
+                }`} 
+              />
+            </button>
           </div>
           
-          <div className="space-y-2">
-            <div>
-              <label className="text-sm font-medium text-neutral-900">Dimensions</label>
-              <div className="flex">
-                <Input defaultValue="22 | 45 | 21" className="rounded-r-none" />
-                <div className="bg-blue-50 px-4 py-2 border border-l-0 rounded-r-md flex items-center">
-                  <span className="text-sm">cm</span>
+          {isLoadCapacityOpen && (
+            <div className="space-y-3">
+              {/* Dimensions Input */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-neutral-900">Dimensions</label>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-4 w-4 text-neutral-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Length | Width | Height in centimeters</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="flex">
+                  <Input 
+                    value={dimensions}
+                    onChange={(e) => setDimensions(e.target.value)}
+                    className="rounded-r-none border-r-0"
+                  />
+                  <div className="bg-blue-50 px-4 py-2 border border-l-0 rounded-r-md flex items-center">
+                    <span className="text-sm text-neutral-900">cm</span>
+                  </div>
                 </div>
               </div>
+              
+              {/* Number of Boxes Input */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-neutral-900">Number of boxes</label>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-4 w-4 text-neutral-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Total number of boxes in your shipment</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input 
+                  value={numberOfBoxes}
+                  onChange={(e) => setNumberOfBoxes(e.target.value)}
+                  className="w-full"
+                />
+              </div>
             </div>
-            <div>
-              <label className="text-sm font-medium text-neutral-900">Number of boxes</label>
-              <Input defaultValue="34" />
-            </div>
-          </div>
+          )}
         </div>
-      </Card>
-
-      {/* Material Type */}
-      <Card className="p-4">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-neutral-900">MATERIAL TYPE</h3>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox id="hazardous" defaultChecked />
-            <label htmlFor="hazardous" className="text-sm font-medium text-neutral-900">
-              This shipment contains hazardous materials
-            </label>
-          </div>
-        </div>
-      </Card>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 };
