@@ -6,18 +6,19 @@ import { IconBell, IconPlus, IconSearch } from "@tabler/icons-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Input } from "./ui/input"
 import { ModeToggle } from "./mode-toggle"
+import { SessionUser } from "@/lib/types"
 
-const data = {
-  user: {
-    name: "Himanshu",
-    position: "Administrator",
-    avatar: "/profile.png",
-  },
+interface SiteHeaderProps {
+  title?: string;
+  user: SessionUser | null;
 }
 
-export function SiteHeader({ title = "Dashboard" }: { title?: string }) {
+export function SiteHeader({ title = "Dashboard", user }: SiteHeaderProps) {
   return (
-    <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+    <header 
+      className="flex shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear"
+      style={{ height: "var(--header-height, 4rem)" }}
+    >
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
         <Separator
@@ -54,7 +55,13 @@ export function SiteHeader({ title = "Dashboard" }: { title?: string }) {
               </Button>
 
               <ModeToggle />
-          <NavUser user={data.user} /> 
+          {user && (
+            <NavUser user={{
+              name: user.email.split('@')[0].charAt(0).toUpperCase() + user.email.split('@')[0].slice(1), // Capitalize first letter
+              position: user.role.charAt(0).toUpperCase() + user.role.slice(1), // Capitalize role
+              avatar: "/profile.png",
+            }} />
+          )}
         </div>
       </div>
     </header>

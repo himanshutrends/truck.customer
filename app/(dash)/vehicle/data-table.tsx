@@ -22,7 +22,6 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import {
   IconBox,
-  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,
@@ -32,14 +31,10 @@ import {
   IconDotsVertical,
   IconFileExport,
   IconGripVertical,
-  IconLayoutColumns,
   IconLoader,
   IconPlus,
   IconTrendingUp,
-  IconWallet,
-  IconArrowRight,
   IconTruck,
-  IconAdjustments,
   IconAdjustmentsFilled,
 } from "@tabler/icons-react"
 import Link from "next/link"
@@ -58,9 +53,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
-import { z } from "zod"
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -68,7 +61,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -91,19 +83,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-export const schema = z.object({
-  id: z.string(),
-  vehicleNumber: z.string(),
-  type: z.string(),
-  maxWeight: z.string(),
-  status: z.enum(["Available", "Unavailable", "Shipping"]),
-  currentLocation: z.string(),
-  driver: z.object({
-    name: z.string(),
-    avatar: z.string(),
-  }),
-})
+import { Vehicle } from "./server/actions/vehicle"
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: string }) {
@@ -125,7 +105,7 @@ function DragHandle({ id }: { id: string }) {
   )
 }
 
-const columns: ColumnDef<z.infer<typeof schema>>[] = [
+const columns: ColumnDef<Vehicle>[] = [
   {
     id: "drag",
     header: () => null,
@@ -158,41 +138,44 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "vehicleNumber",
+    accessorKey: "registration_number",
     header: "VEHICLE NUMBER",
     cell: ({ row }) => {
       return (
         <Link 
-          href={`/vehicle/${row.original.vehicleNumber}`}
+          href={`/vehicle/${row.original.registration_number}`}
           className="font-medium text-primary hover:underline"
         >
-          {row.original.vehicleNumber}
+          {row.original.registration_number}
         </Link>
       )
     },
     enableHiding: false,
   },
   {
-    accessorKey: "type",
+    accessorKey: "truck_type",
     header: "TYPE",
     cell: ({ row }) => (
       <div className="font-medium">
-        {row.original.type}
+        {typeof row.original.truck_type === 'string' 
+          ? row.original.truck_type 
+          : row.original.truck_type?.name || 'Unknown'
+        }
       </div>
     ),
   },
   {
-    accessorKey: "maxWeight",
+    accessorKey: "capacity",
     header: "MAX WT.",
     cell: ({ row }) => (
-      <div className="font-medium">{row.original.maxWeight}</div>
+      <div className="font-medium">{row.original.capacity}</div>
     ),
   },
   {
-    accessorKey: "status",
+    accessorKey: "availability_status",
     header: "STATUS",
     cell: ({ row }) => {
-      const status = row.original.status
+      const status = row.original.availability_status
       let badgeClass = ""
       let icon = null
       
@@ -223,26 +206,25 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     },
   },
   {
-    accessorKey: "currentLocation",
+    accessorKey: "current_location_address",
     header: "CURRENT LOCATION",
     cell: ({ row }) => (
-      <div className="font-medium">{row.original.currentLocation}</div>
+      <div className="font-medium">{row.original.current_location_address}</div>
     ),
   },
   {
-    accessorKey: "driver",
-    header: "DRIVER",
-    cell: ({ row }) => {
-      const driver = row.original.driver
+    accessorKey: "vendor_name",
+    header: "DRIVER", 
+    cell: () => {
       return (
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={driver.avatar} alt={driver.name} />
+            <AvatarImage src="/profile.png" alt="Driver" />
             <AvatarFallback>
-              {driver.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+              NA
             </AvatarFallback>
           </Avatar>
-          <span className="font-medium">{driver.name}</span>
+          <span className="font-medium">Not Assigned</span>
         </div>
       )
     },
@@ -273,7 +255,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
 ]
 
-function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
+function DraggableRow({ row }: { row: Row<Vehicle> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
   })
@@ -299,74 +281,13 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 }
 
 export function DataTable({
-  data: initialData,
+  data,
   onAddClick,
 }: {
-  data: z.infer<typeof schema>[]
+  data: Vehicle[]
   onAddClick?: () => void
 }) {
-  const [data, setData] = React.useState(() => initialData.length > 0 ? initialData : [
-    {
-      id: "vehicle001",
-      vehicleNumber: "MH05R6788",
-      type: "Heavy Truck",
-      maxWeight: "80 tn",
-      status: "Shipping" as const,
-      currentLocation: "Jaipur, Rajasthan",
-      driver: {
-        name: "Raj Singh",
-        avatar: "/avatars/raj-singh.jpg",
-      },
-    },
-    {
-      id: "vehicle002",
-      vehicleNumber: "MH04A1234",
-      type: "Light Truck",
-      maxWeight: "740 kg",
-      status: "Available" as const,
-      currentLocation: "Chinnwara, MP",
-      driver: {
-        name: "Ayesha Patel",
-        avatar: "/avatars/ayesha-patel.jpg",
-      },
-    },
-    {
-      id: "vehicle003",
-      vehicleNumber: "MH07B4567",
-      type: "Light Truck",
-      maxWeight: "120 tn",
-      status: "Shipping" as const,
-      currentLocation: "Guwahati, Assam",
-      driver: {
-        name: "Carlos Ramirez",
-        avatar: "/avatars/carlos-ramirez.jpg",
-      },
-    },
-    {
-      id: "vehicle004",
-      vehicleNumber: "MH09C8901",
-      type: "Heavy Truck",
-      maxWeight: "60 tn",
-      status: "Shipping" as const,
-      currentLocation: "Pune, Maharashtra",
-      driver: {
-        name: "Sofia Chen",
-        avatar: "/avatars/sofia-chen.jpg",
-      },
-    },
-    {
-      id: "vehicle005",
-      vehicleNumber: "MH02D2345",
-      type: "Heavy Truck",
-      maxWeight: "90 tn",
-      status: "Unavailable" as const,
-      currentLocation: "Bhopal, MP",
-      driver: {
-        name: "Liam Johnson",
-        avatar: "/avatars/liam-johnson.jpg",
-      },
-    },
-  ])
+  const [tableData, setTableData] = React.useState<Vehicle[]>(data)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
@@ -378,6 +299,11 @@ export function DataTable({
     pageIndex: 0,
     pageSize: 10,
   })
+
+  // Update table data when props change
+  React.useEffect(() => {
+    setTableData(data)
+  }, [data])
   const sortableId = React.useId()
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
@@ -386,12 +312,12 @@ export function DataTable({
   )
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map(({ id }) => id) || [],
-    [data]
+    () => tableData?.map(({ id }) => id) || [],
+    [tableData]
   )
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     state: {
       sorting,
@@ -418,7 +344,7 @@ export function DataTable({
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (active && over && active.id !== over.id) {
-      setData((data) => {
+      setTableData((data) => {
         const oldIndex = dataIds.indexOf(active.id)
         const newIndex = dataIds.indexOf(over.id)
         return arrayMove(data, oldIndex, newIndex)
@@ -446,9 +372,9 @@ export function DataTable({
             type="text" 
             placeholder="Search..." 
             className="h-8 w-[197px]" 
-            value={(table.getColumn("vehicleNumber")?.getFilterValue() as string) ?? ""}
+            value={(table.getColumn("registration_number")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("vehicleNumber")?.setFilterValue(event.target.value)
+              table.getColumn("registration_number")?.setFilterValue(event.target.value)
             }
           />
           <Button variant="outline" size="sm">

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/lib/auth-context";
-import { getCurrentUser } from "@/lib/auth";
+import { AuthProvider } from "@/contexts/auth-context";
+import { AuthManager } from "@/lib/auth-manager";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,8 +26,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Get initial user data on the server
-  const initialUser = await getCurrentUser();
+  const initialUser = await AuthManager.getCurrentUser();
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -42,6 +42,7 @@ export default async function RootLayout({
           <AuthProvider initialUser={initialUser}>
             {children}
           </AuthProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

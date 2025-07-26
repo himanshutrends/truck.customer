@@ -22,29 +22,19 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import {
-  IconBox,
-  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
   IconCircleCheckFilled,
+  IconCircleOff,
   IconDots,
   IconDotsVertical,
   IconFileExport,
   IconGripVertical,
-  IconLayoutColumns,
-  IconLoader,
   IconPlus,
-  IconTrendingUp,
-  IconWallet,
-  IconArrowRight,
-  IconTruck,
-  IconAdjustments,
-  IconAdjustmentsFilled,
-  IconCircleOff,
-  IconPlane,
   IconUser,
+  IconAdjustmentsFilled,
 } from "@tabler/icons-react"
 import {
   ColumnDef,
@@ -61,9 +51,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
-import { z } from "zod"
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -71,7 +59,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -94,15 +81,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-export const schema = z.object({
-  id: z.string(),
-  driverName: z.string(),
-  avatar: z.string(),
-  phoneNo: z.string(),
-  currentVehicle: z.string(),
-  status: z.enum(["Available", "Unavailable", "On Leave"]),
-})
+import { Driver } from "./server/actions/driver"
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: string }) {
@@ -124,7 +103,7 @@ function DragHandle({ id }: { id: string }) {
   )
 }
 
-const columns: ColumnDef<z.infer<typeof schema>>[] = [
+const columns: ColumnDef<Driver>[] = [
   {
     id: "drag",
     header: () => null,
@@ -157,19 +136,19 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "driverName",
+    accessorKey: "name",
     header: "DRIVER NAME",
     cell: ({ row }) => {
       return (
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={row.original.avatar} alt={row.original.driverName} />
+            <AvatarImage src={row.original.profile_image || '/profile.png'} alt={row.original.name} />
             <AvatarFallback>
-              {row.original.driverName.split(' ').map(n => n[0]).join('').toUpperCase()}
+              {row.original.name.split(' ').map(n => n[0]).join('').toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <Link href={`/driver/${row.original.id}`} className="font-medium hover:underline">
-            {row.original.driverName}
+            {row.original.name}
           </Link>
         </div>
       )
@@ -177,45 +156,40 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "phoneNo",
+    accessorKey: "phone_number",
     header: "PHONE NO.",
     cell: ({ row }) => (
       <div className="font-medium">
-        {row.original.phoneNo}
+        {row.original.phone_number}
       </div>
     ),
   },
   {
-    accessorKey: "currentVehicle",
+    accessorKey: "assigned_truck_info",
     header: "CURRENT VEHICLE",
     cell: ({ row }) => (
-      <div className="font-medium">{row.original.currentVehicle}</div>
+      <div className="font-medium">
+        {row.original.assigned_truck_info?.registration_number || 'Not Assigned'}
+      </div>
     ),
   },
   {
-    accessorKey: "status",
+    accessorKey: "is_available",
     header: "STATUS",
     cell: ({ row }) => {
-      const status = row.original.status
+      const isAvailable = row.original.is_available
       let badgeClass = ""
       let icon = null
+      let status = ""
       
-      switch (status) {
-        case "Available":
-          badgeClass = "bg-green-50 text-green-600 border-green-200 dark:bg-green-900 dark:text-green-300"
-          icon = <IconCircleCheckFilled className="h-3 w-3" />
-          break
-        case "Unavailable":
-          badgeClass = "bg-red-50 text-red-600 border-red-200 dark:bg-red-900 dark:text-red-300"
-          icon = <IconCircleOff className="h-3 w-3" />
-          break
-        case "On Leave":
-          badgeClass = "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900 dark:text-orange-300"
-          icon = <IconPlane className="h-3 w-3" />
-          break
-        default:
-          badgeClass = "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900 dark:text-gray-300"
-          icon = <IconBox className="h-3 w-3" />
+      if (isAvailable) {
+        status = "Available"
+        badgeClass = "bg-green-50 text-green-600 border-green-200 dark:bg-green-900 dark:text-green-300"
+        icon = <IconCircleCheckFilled className="h-3 w-3" />
+      } else {
+        status = "Unavailable"
+        badgeClass = "bg-red-50 text-red-600 border-red-200 dark:bg-red-900 dark:text-red-300"
+        icon = <IconCircleOff className="h-3 w-3" />
       }
       
       return (
@@ -252,7 +226,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
 ]
 
-function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
+function DraggableRow({ row }: { row: Row<Driver> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
   })
@@ -278,86 +252,13 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 }
 
 export function DataTable({
-  data: initialData,
+  data,
   onAddClick,
 }: {
-  data: z.infer<typeof schema>[]
+  data: Driver[]
   onAddClick?: () => void
 }) {
-  const [data, setData] = React.useState(() => initialData.length > 0 ? initialData : [
-    {
-      id: "ID050",
-      driverName: "Raj Singh",
-      avatar: "/avatars/raj-singh.jpg",
-      phoneNo: "+91 45564 33443",
-      currentVehicle: "MH05R6788",
-      status: "Available" as const,
-    },
-    {
-      id: "ID051",
-      driverName: "Ayesha Patel",
-      avatar: "/avatars/ayesha-patel.jpg",
-      phoneNo: "+91 89975 78614",
-      currentVehicle: "MH04A1234",
-      status: "Unavailable" as const,
-    },
-    {
-      id: "ID052",
-      driverName: "Carlos Ramirez",
-      avatar: "/avatars/carlos-ramirez.jpg",
-      phoneNo: "+91 12345 67890",
-      currentVehicle: "MH07B4567",
-      status: "Unavailable" as const,
-    },
-    {
-      id: "ID053",
-      driverName: "Sofia Chen",
-      avatar: "/avatars/sofia-chen.jpg",
-      phoneNo: "+91 98765 43210",
-      currentVehicle: "MH09C8901",
-      status: "On Leave" as const,
-    },
-    {
-      id: "ID054",
-      driverName: "Liam Johnson",
-      avatar: "/avatars/liam-johnson.jpg",
-      phoneNo: "+91 55443 22112",
-      currentVehicle: "MH02D2345",
-      status: "Unavailable" as const,
-    },
-    {
-      id: "ID055",
-      driverName: "Maya Rodriguez",
-      avatar: "/avatars/maya-rodriguez.jpg",
-      phoneNo: "+91 11223 44556",
-      currentVehicle: "MH06E6789",
-      status: "Available" as const,
-    },
-    {
-      id: "ID056",
-      driverName: "Zara Ahmed",
-      avatar: "/avatars/zara-ahmed.jpg",
-      phoneNo: "+91 33445 66778",
-      currentVehicle: "MH08F1234",
-      status: "Available" as const,
-    },
-    {
-      id: "ID057",
-      driverName: "Dylan Brown",
-      avatar: "/avatars/dylan-brown.jpg",
-      phoneNo: "+91 99887 66554",
-      currentVehicle: "MH03G4567",
-      status: "Available" as const,
-    },
-    {
-      id: "ID058",
-      driverName: "Olivia Martinez",
-      avatar: "/avatars/olivia-martinez.jpg",
-      phoneNo: "+91 22112 33445",
-      currentVehicle: "MH10H8901",
-      status: "Unavailable" as const,
-    },
-  ])
+  const [tableData, setTableData] = React.useState<Driver[]>(data)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
@@ -369,6 +270,11 @@ export function DataTable({
     pageIndex: 0,
     pageSize: 10,
   })
+
+  // Update table data when props change
+  React.useEffect(() => {
+    setTableData(data)
+  }, [data])
   const sortableId = React.useId()
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
@@ -377,12 +283,12 @@ export function DataTable({
   )
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map(({ id }) => id) || [],
-    [data]
+    () => tableData?.map(({ id }) => id) || [],
+    [tableData]
   )
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     state: {
       sorting,
@@ -409,7 +315,7 @@ export function DataTable({
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (active && over && active.id !== over.id) {
-      setData((data) => {
+      setTableData((data) => {
         const oldIndex = dataIds.indexOf(active.id)
         const newIndex = dataIds.indexOf(over.id)
         return arrayMove(data, oldIndex, newIndex)
@@ -437,9 +343,9 @@ export function DataTable({
             type="text" 
             placeholder="Search..." 
             className="h-8 w-[197px]" 
-            value={(table.getColumn("driverName")?.getFilterValue() as string) ?? ""}
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("driverName")?.setFilterValue(event.target.value)
+              table.getColumn("name")?.setFilterValue(event.target.value)
             }
           />
           <Button variant="outline" size="sm">

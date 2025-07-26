@@ -2,7 +2,6 @@
 
 import {
   IconCreditCard,
-  IconDotsVertical,
   IconLogout,
   IconNotification,
   IconUserCircle,
@@ -24,11 +23,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
 import { ChevronDown } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
 
 export function NavUser({
   user,
@@ -39,7 +37,11 @@ export function NavUser({
     avatar: string
   }
 }) {
-  const { isMobile } = useSidebar()
+  const { logout } = useAuth()
+
+  const handleLogout = async () => {
+    await logout()
+  }
 
   return (
     <SidebarMenu>
@@ -98,7 +100,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

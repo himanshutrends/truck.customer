@@ -1,9 +1,10 @@
 'use server';
 
+import { redirect, RedirectType } from 'next/navigation'
 import { z } from 'zod';
-import { TokenManager, getCurrentUser } from '@/lib/auth';
-import { ApiResponse, AuthResponse, SessionUser } from '@/lib/types';
-import { redirect } from 'next/navigation';
+import { AuthManager } from '@/lib/auth-manager';
+import { ApiHandler } from '@/lib/api';
+import { SessionUser, User } from '@/lib/types';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -21,11 +22,11 @@ const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
 });
 
-interface ActionResult {
+type ActionResult = {
   success: boolean;
   message?: string;
   errors?: Record<string, string[]>;
-}
+};
 
 export async function loginAction(
   _prevState: ActionResult | null,
@@ -38,87 +39,45 @@ export async function loginAction(
     };
 
     const validatedData = loginSchema.parse(rawData);
+    const response = await AuthManager.login(validatedData.email, validatedData.password);
 
-    const response = await fetch(`${process.env.API_BASE_URL}/api/auth/login/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(validatedData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
+    if (!response.success || !response.data) {
       return {
         success: false,
-        message: errorData?.message || 'Login failed',
-        errors: errorData?.errors,
+        message: response.error || 'Login failed',
       };
     }
-
-    const data: ApiResponse<AuthResponse> = await response.json();
-
-
-    if (!data.success || !data.data) {
-      return {
-        success: false,
-        message: data.message || 'Login failed',
-      };
-    }
-
-    // Store tokens in HTTP-only cookies
-    await TokenManager.setTokens(
-      data.data.tokens.access,
-      data.data.tokens.refresh
-    );
-
-    // Redirect based on user role
-    const userRole = data.data.user.role;
-    let redirectPath = '/dashboard';
-
-    switch (userRole) {
-      case 'admin':
-        redirectPath = '/admin/dashboard';
-        break;
-      case 'manager':
-        redirectPath = '/manager/dashboard';
-        break;
-      case 'driver':
-        redirectPath = '/driver/dashboard';
-        break;
-      case 'customer':
-      default:
-        redirectPath = '/dashboard';
-        break;
-    }
-
-    redirect(redirectPath);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors;
-      const processedErrors: Record<string, string[]> = {};
-      
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          processedErrors[key] = value;
+      const errors: Record<string, string[]> = {};
+      error.issues.forEach((issue) => {
+        if (issue.path) {
+          const field = issue.path.join('.');
+          errors[field] = errors[field] || [];
+          errors[field].push(issue.message);
         }
       });
-
       return {
         success: false,
         message: 'Validation failed',
-        errors: processedErrors,
+        errors,
       };
     }
-
-    console.error('Login error:', error);
     return {
       success: false,
       message: 'An unexpected error occurred',
     };
   }
+
+  // Redirect based on user role
+  const redirectPath = '/dashboard';
+  redirect(redirectPath, RedirectType.push);
+
 }
 
+/**
+ * Signup action
+ */
 export async function signupAction(
   _prevState: ActionResult | null,
   formData: FormData
@@ -133,55 +92,38 @@ export async function signupAction(
 
     const validatedData = signupSchema.parse(rawData);
 
-    const response = await fetch(`${process.env.API_BASE_URL}/api/auth/signup/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(validatedData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      return {
-        success: false,
-        message: errorData?.message || 'Signup failed',
-        errors: errorData?.errors,
-      };
-    }
-
-    const data: ApiResponse<AuthResponse> = await response.json();
-
-    if (!data.success || !data.data) {
-      return {
-        success: false,
-        message: data.message || 'Signup failed',
-      };
-    }
-
-    // Store tokens in HTTP-only cookies
-    await TokenManager.setTokens(
-      data.data.tokens.access,
-      data.data.tokens.refresh
+    // Make API call to signup endpoint
+    const response = await ApiHandler.post<{ user: User; tokens: { access: string; refresh: string } }>(
+      'api/auth/signup/',
+      validatedData
     );
 
-    // Redirect to customer dashboard (new users are customers by default)
+    if (!response.success || !response.data) {
+      return {
+        success: false,
+        message: response.error || 'Signup failed',
+      };
+    }
+
+    // Store tokens and user data
+    await AuthManager.setTokens(response.data.tokens.access, response.data.tokens.refresh, response.data.user);
+
     redirect('/dashboard');
+
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors;
-      const processedErrors: Record<string, string[]> = {};
-      
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          processedErrors[key] = value;
+      const errors: Record<string, string[]> = {};
+      error.issues.forEach((issue) => {
+        if (issue.path) {
+          const field = issue.path.join('.');
+          errors[field] = errors[field] || [];
+          errors[field].push(issue.message);
         }
       });
-
       return {
         success: false,
         message: 'Validation failed',
-        errors: processedErrors,
+        errors,
       };
     }
 
@@ -193,6 +135,9 @@ export async function signupAction(
   }
 }
 
+/**
+ * Forgot password action
+ */
 export async function forgotPasswordAction(
   _prevState: ActionResult | null,
   formData: FormData
@@ -204,20 +149,16 @@ export async function forgotPasswordAction(
 
     const validatedData = forgotPasswordSchema.parse(rawData);
 
-    const response = await fetch(`${process.env.API_BASE_URL}/api/auth/forgot-password/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(validatedData),
-    });
+    // Make API call to forgot password endpoint
+    const response = await ApiHandler.post<{ message: string }>(
+      'api/auth/forgot-password/',
+      validatedData
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
+    if (!response.success) {
       return {
         success: false,
-        message: errorData?.message || 'Failed to send reset email',
-        errors: errorData?.errors,
+        message: response.error || 'Failed to send reset email',
       };
     }
 
@@ -227,19 +168,18 @@ export async function forgotPasswordAction(
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const fieldErrors = error.flatten().fieldErrors;
-      const processedErrors: Record<string, string[]> = {};
-      
-      Object.entries(fieldErrors).forEach(([key, value]) => {
-        if (value) {
-          processedErrors[key] = value;
+      const errors: Record<string, string[]> = {};
+      error.issues.forEach((issue) => {
+        if (issue.path) {
+          const field = issue.path.join('.');
+          errors[field] = errors[field] || [];
+          errors[field].push(issue.message);
         }
       });
-
       return {
         success: false,
         message: 'Validation failed',
-        errors: processedErrors,
+        errors,
       };
     }
 
@@ -251,75 +191,43 @@ export async function forgotPasswordAction(
   }
 }
 
-export async function logoutAction(): Promise<void> {
-  try {
-    // Clear tokens from cookies
-    await TokenManager.clearTokens();
-    
-    // Optionally call backend logout endpoint to invalidate tokens
-    // This is a fire-and-forget operation
-    const refreshToken = await TokenManager.getRefreshToken();
-    if (refreshToken) {
-      fetch(`${process.env.API_BASE_URL}/api/auth/logout/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refresh: refreshToken }),
-      }).catch(() => {
-        // Ignore errors as tokens are already cleared locally
-      });
-    }
-  } catch (error) {
-    console.error('Logout error:', error);
-  }
-  
-  redirect('/login');
-}
-
+/**
+ * Get current user - for use in client components via server actions
+ */
 export async function getCurrentUserAction(): Promise<SessionUser | null> {
   try {
-    const user = await getCurrentUser();
-    return user;
+    return await AuthManager.getCurrentUser();
   } catch (error) {
     console.error('Error getting current user:', error);
     return null;
   }
 }
 
-export async function refreshTokenAction(): Promise<{ success: boolean; error?: string }> {
+
+/**
+ * Token action - for use in client components
+ */
+export async function getTokenAction(): Promise<string | null> {
   try {
-    const refreshToken = await TokenManager.getRefreshToken();
-    
-    if (!refreshToken) {
-      return { success: false, error: 'No refresh token found' };
+    const access_token = await AuthManager.getAccessToken();
+    if (!access_token) {
+      return null;
     }
-
-    const response = await fetch(`${process.env.API_BASE_URL}/api/auth/refresh/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refresh: refreshToken }),
-    });
-
-    if (!response.ok) {
-      await TokenManager.clearTokens();
-      return { success: false, error: 'Token refresh failed' };
-    }
-
-    const data: ApiResponse<{ access: string }> = await response.json();
-    
-    if (data.success && data.data?.access) {
-      await TokenManager.setTokens(data.data.access, refreshToken);
-      return { success: true };
-    }
-
-    await TokenManager.clearTokens();
-    return { success: false, error: 'Invalid refresh response' };
+    return access_token;
   } catch (error) {
-    console.error('Token refresh error:', error);
-    await TokenManager.clearTokens();
-    return { success: false, error: 'Token refresh failed' };
+    console.error('Error getting token:', error);
+    return null;
   }
+}
+
+/**
+ * Logout action - for use in client components
+ */
+export async function logoutAction(): Promise<void> {
+  try {
+    await AuthManager.logout();
+  } catch (error) {
+    console.error('Error during logout:', error);
+  }
+  redirect('/login');
 }

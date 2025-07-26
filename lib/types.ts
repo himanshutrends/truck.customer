@@ -22,7 +22,7 @@ export interface ApiResponse<T = unknown> {
   errors?: Record<string, string[]>;
 }
 
-export type UserRole = 'admin' | 'customer' | 'driver' | 'manager';
+export type UserRole = 'admin' | 'customer' | 'driver' | 'manager' | 'vendor';
 
 export interface SessionUser extends User {
   isAuthenticated: boolean;
