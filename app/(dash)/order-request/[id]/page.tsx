@@ -6,14 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { 
   IconArrowLeft, 
   IconDots, 
-  IconFileExport, 
-  IconFileTypePdf,
-  IconArrowUp,
-  IconArrowDown
+  IconFileExport,
+  IconArrowUp
 } from "@tabler/icons-react"
 import Link from "next/link"
-import { Check } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
+import { getOrderRequestById } from "./server/actions/order-request-detail"
+import { QuotationActions } from "./components/quotation-actions"
 
 interface OrderRequestDetailProps {
   params: {
@@ -21,93 +20,41 @@ interface OrderRequestDetailProps {
   }
 }
 
-interface QuoteRequest {
-  id: string
-  companyName: string
-  status: "Renegotiated" | "Pending" | "Accepted" | "Rejected"
-  quote: string
-  remarks: string
+// Helper function to format date
+const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  } catch {
+    return dateString;
+  }
 }
 
-interface OrderRequestData {
-  id: string
-  orderRequestNumber: string
-  quotesAvailable: number
-  orderDetails: {
-    pickupAddress: string
-    deliveryAddress: string
-    pickupDate: string
-    arrivalDate: string
-    weight: string
-    fee: string
+// Helper function to format currency
+const formatCurrency = (amount: string): string => {
+  try {
+    const numAmount = parseFloat(amount);
+    return `₹${numAmount.toLocaleString('en-IN')}`;
+  } catch {
+    return amount;
   }
-  loadAndVehicleDetails: {
-    vehicleType: string
-    itemTransported: string
-    packageType: string
-    packageDimensions: string
-    packageQuantity: string
-    hazardous: string
-  }
-  quoteRequests: QuoteRequest[]
 }
 
-// Mock data - in real app this would come from API/database
-const getOrderRequestData = (id: string): OrderRequestData | null => {
-  const orderRequests: Record<string, OrderRequestData> = {
-    "00112233HEM": {
-      id: "00112233HEM",
-      orderRequestNumber: "#00112233HEM",
-      quotesAvailable: 2,
-      orderDetails: {
-        pickupAddress: "45 Maple Street, Chinnwara, MP",
-        deliveryAddress: "45 Maple Street, New Delhi, MP",
-        pickupDate: "12 January 2025",
-        arrivalDate: "26 January 2025",
-        weight: "12 Tonnes",
-        fee: "₹1,64,000"
-      },
-      loadAndVehicleDetails: {
-        vehicleType: "-",
-        itemTransported: "Aluminium",
-        packageType: "Wooden Crates",
-        packageDimensions: "12 x 50 x 12 cm",
-        packageQuantity: "134",
-        hazardous: "No"
-      },
-      quoteRequests: [
-        {
-          id: "1",
-          companyName: "Mearsk Shipping",
-          status: "Renegotiated",
-          quote: "₹28,000",
-          remarks: "-"
-        },
-        {
-          id: "2", 
-          companyName: "TechNova Solutions",
-          status: "Renegotiated",
-          quote: "₹1,64,000",
-          remarks: "Price Breakdown 123 ... 2323"
-        }
-      ]
-    }
-  }
-
-  return orderRequests[id] || null
-}
-
-export default function OrderRequestDetailPage({ params }: OrderRequestDetailProps) {
-  const orderRequest = getOrderRequestData(params.id)
+export default async function OrderRequestDetailPage({ params }: OrderRequestDetailProps) {
+  const response = await getOrderRequestById(params.id)
   
-  if (!orderRequest) {
+  if (!response.success || !response.data) {
     return (
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
         <div className="px-4 lg:px-6">
           <Card className="mx-6">
             <CardContent className="p-6">
               <h1 className="text-xl font-semibold">Order Request not found</h1>
-              <p className="text-muted-foreground mt-2">The order request you're looking for doesn't exist.</p>
+              <p className="text-muted-foreground mt-2">The order request you&apos;re looking for doesn&apos;t exist.</p>
               <Link href="/order-request">
                 <Button variant="outline" className="mt-4">
                   <IconArrowLeft className="h-4 w-4 mr-2" />
@@ -121,15 +68,16 @@ export default function OrderRequestDetailPage({ params }: OrderRequestDetailPro
     )
   }
 
+  const { order_request: orderRequest, quotations } = response.data
+
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Renegotiated":
+    switch (status.toLowerCase()) {
+      case "renegotiated":
+      case "accepted":
         return "bg-green-50 text-green-600 border-green-200"
-      case "Accepted":
-        return "bg-blue-50 text-blue-600 border-blue-200"
-      case "Pending":
+      case "pending":
         return "bg-orange-50 text-orange-600 border-orange-200"
-      case "Rejected":
+      case "rejected":
         return "bg-red-50 text-red-600 border-red-200"
       default:
         return "bg-gray-50 text-gray-600 border-gray-200"
@@ -147,9 +95,9 @@ export default function OrderRequestDetailPage({ params }: OrderRequestDetailPro
               </Button>
             </Link>
             <div className="flex items-center gap-3">
-              <CardTitle>Order Request {orderRequest.orderRequestNumber}</CardTitle>
+              <CardTitle>Order Request #{orderRequest.id}</CardTitle>
               <Badge variant="outline" className="px-3 py-1 bg-blue-50 text-blue-600 border-blue-200">
-                {orderRequest.quotesAvailable} Quotes Available
+                {quotations.length} Quotes Available
               </Badge>
             </div>
           </div>
@@ -171,27 +119,27 @@ export default function OrderRequestDetailPage({ params }: OrderRequestDetailPro
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div>
                 <label className="text-sm text-muted-foreground">Pickup Address</label>
-                <p className="font-medium">{orderRequest.orderDetails.pickupAddress}</p>
+                <p className="font-medium">{orderRequest.origin_city}, {orderRequest.origin_pincode}</p>
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">Delivery Address</label>
-                <p className="font-medium">{orderRequest.orderDetails.deliveryAddress}</p>
+                <p className="font-medium">{orderRequest.destination_city}, {orderRequest.destination_pincode}</p>
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">Pickup Date</label>
-                <p className="font-medium">{orderRequest.orderDetails.pickupDate}</p>
+                <p className="font-medium">{formatDate(orderRequest.pickup_date)}</p>
               </div>
               <div>
-                <label className="text-sm text-muted-foreground">Arrival Date</label>
-                <p className="font-medium">{orderRequest.orderDetails.arrivalDate}</p>
+                <label className="text-sm text-muted-foreground">Drop Date</label>
+                <p className="font-medium">{formatDate(orderRequest.drop_date)}</p>
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">Weight</label>
-                <p className="font-medium">{orderRequest.orderDetails.weight}</p>
+                <p className="font-medium">{orderRequest.weight} {orderRequest.weight_unit}</p>
               </div>
               <div>
-                <label className="text-sm text-muted-foreground">Fee</label>
-                <p className="font-medium">{orderRequest.orderDetails.fee}</p>
+                <label className="text-sm text-muted-foreground">Status</label>
+                <p className="font-medium capitalize">{orderRequest.status}</p>
               </div>
             </div>
           </div>
@@ -200,31 +148,31 @@ export default function OrderRequestDetailPage({ params }: OrderRequestDetailPro
 
           {/* Load and Vehicle Details */}
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-4">LOAD AND VEHICLE DETAILS</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-4">ADDITIONAL DETAILS</h3>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div>
-                <label className="text-sm text-muted-foreground">Vehicle Type</label>
-                <p className="font-medium">{orderRequest.loadAndVehicleDetails.vehicleType}</p>
+                <label className="text-sm text-muted-foreground">Urgency Level</label>
+                <p className="font-medium capitalize">{orderRequest.urgency_level}</p>
               </div>
               <div>
-                <label className="text-sm text-muted-foreground">Item Transported</label>
-                <p className="font-medium">{orderRequest.loadAndVehicleDetails.itemTransported}</p>
+                <label className="text-sm text-muted-foreground">Created At</label>
+                <p className="font-medium">{formatDate(orderRequest.created_at)}</p>
               </div>
               <div>
-                <label className="text-sm text-muted-foreground">Package Type</label>
-                <p className="font-medium">{orderRequest.loadAndVehicleDetails.packageType}</p>
+                <label className="text-sm text-muted-foreground">Updated At</label>
+                <p className="font-medium">{formatDate(orderRequest.updated_at)}</p>
               </div>
               <div>
-                <label className="text-sm text-muted-foreground">Package Dimensions</label>
-                <p className="font-medium">{orderRequest.loadAndVehicleDetails.packageDimensions}</p>
+                <label className="text-sm text-muted-foreground">-</label>
+                <p className="font-medium">-</p>
               </div>
               <div>
-                <label className="text-sm text-muted-foreground">Package Quantity</label>
-                <p className="font-medium">{orderRequest.loadAndVehicleDetails.packageQuantity}</p>
+                <label className="text-sm text-muted-foreground">-</label>
+                <p className="font-medium">-</p>
               </div>
               <div>
-                <label className="text-sm text-muted-foreground">Hazardous?</label>
-                <p className="font-medium">{orderRequest.loadAndVehicleDetails.hazardous}</p>
+                <label className="text-sm text-muted-foreground">-</label>
+                <p className="font-medium">-</p>
               </div>
             </div>
           </div>
@@ -233,7 +181,7 @@ export default function OrderRequestDetailPage({ params }: OrderRequestDetailPro
 
           {/* Quote Requests Table */}
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-4">QUOTE REQUESTS</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-4">QUOTATIONS</h3>
             <div className="border rounded-lg">
               <Table>
                 <TableHeader>
@@ -245,19 +193,25 @@ export default function OrderRequestDetailPage({ params }: OrderRequestDetailPro
                     </TableHead>
                     <TableHead className="font-medium text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        COMPANY NAME
+                        VENDOR NAME
                         <IconArrowUp className="h-3 w-3" />
                       </div>
                     </TableHead>
                     <TableHead className="font-medium text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        QUOTE
+                        VEHICLE
                         <IconArrowUp className="h-3 w-3" />
                       </div>
                     </TableHead>
                     <TableHead className="font-medium text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        REMARKS
+                        TOTAL AMOUNT
+                        <IconArrowUp className="h-3 w-3" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-medium text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        STATUS
                         <IconArrowUp className="h-3 w-3" />
                       </div>
                     </TableHead>
@@ -265,27 +219,43 @@ export default function OrderRequestDetailPage({ params }: OrderRequestDetailPro
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orderRequest.quoteRequests.map((quote) => (
-                    <TableRow key={quote.id}>
+                  {quotations.map((quotation) => (
+                    <TableRow key={quotation.id}>
                       <TableCell>
                         <Checkbox
                           className="h-4 w-4"
                         />
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{quote.companyName}</span>
-                          <Badge variant="outline" className={`px-2 py-1 text-xs ${getStatusBadge(quote.status)}`}>
-                            {quote.status}
-                          </Badge>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium">{quotation.vendor_name}</span>
+                          <span className="text-xs text-muted-foreground">ID: {quotation.frontend_vendor_id}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{quote.quote}</TableCell>
-                      <TableCell className="text-muted-foreground">{quote.remarks}</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <IconDots className="h-4 w-4" />
-                        </Button>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium">{quotation.items.vehicle_model}</span>
+                          <span className="text-xs text-muted-foreground">{quotation.items.vehicle_type}</span>
+                          <span className="text-xs text-muted-foreground">GPS: {quotation.items.gps_number}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium">{formatCurrency(quotation.total_amount)}</span>
+                          <span className="text-xs text-muted-foreground">Base: {formatCurrency(quotation.base_price)}</span>
+                          <span className="text-xs text-muted-foreground">Delivery: {quotation.items.estimated_delivery}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`px-2 py-1 text-xs ${getStatusBadge(quotation.status)}`}>
+                          {quotation.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <QuotationActions 
+                          quotationId={quotation.id} 
+                          currentStatus={quotation.status}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}

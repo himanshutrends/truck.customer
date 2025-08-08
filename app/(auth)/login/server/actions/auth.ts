@@ -1,33 +1,14 @@
 'use server';
-
 import { redirect, RedirectType } from 'next/navigation'
-import { z } from 'zod';
 import { AuthManager } from '@/lib/auth-manager';
-import { ApiHandler } from '@/lib/api';
+import { apiPost } from '@/lib/api';
 import { SessionUser, User } from '@/lib/types';
+import { loginSchema, signupSchema, forgotPasswordSchema, ActionResult } from '../helpers/auth';
+import { z } from 'zod';
 
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-const signupSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  phone_number: z.string().min(1, 'Phone number is required'),
-});
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
-});
-
-type ActionResult = {
-  success: boolean;
-  message?: string;
-  errors?: Record<string, string[]>;
-};
-
+/**
+ * Login action
+ */
 export async function loginAction(
   _prevState: ActionResult | null,
   formData: FormData
@@ -93,7 +74,7 @@ export async function signupAction(
     const validatedData = signupSchema.parse(rawData);
 
     // Make API call to signup endpoint
-    const response = await ApiHandler.post<{ user: User; tokens: { access: string; refresh: string } }>(
+    const response = await apiPost<{ user: User; tokens: { access: string; refresh: string } }>(
       'api/auth/signup/',
       validatedData
     );
@@ -150,7 +131,7 @@ export async function forgotPasswordAction(
     const validatedData = forgotPasswordSchema.parse(rawData);
 
     // Make API call to forgot password endpoint
-    const response = await ApiHandler.post<{ message: string }>(
+    const response = await apiPost<{ message: string }>(
       'api/auth/forgot-password/',
       validatedData
     );
@@ -202,7 +183,6 @@ export async function getCurrentUserAction(): Promise<SessionUser | null> {
     return null;
   }
 }
-
 
 /**
  * Token action - for use in client components

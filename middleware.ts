@@ -4,13 +4,14 @@ import { AuthManager } from './lib/auth-manager';
 
 // Define route permissions
 const routePermissions: Record<string, UserRole[]> = {
+  '/': ['admin', 'manager', 'driver', 'customer', 'vendor'],
   '/dashboard': ['admin', 'manager', 'customer', 'vendor'],
   '/order': ['admin', 'manager', 'customer', 'vendor'],
   '/order-request': ['admin', 'manager', 'customer', 'vendor'],
   '/quote-requests': ['admin', 'manager', 'vendor', 'customer'],
   '/profile': ['admin', 'manager', 'customer', 'vendor'],
   '/search-shipments': ['admin', 'manager'],
-  
+
   '/vehicle': ['admin', 'manager', 'vendor'],
   '/driver': ['admin', 'manager', 'vendor'],
 
@@ -42,7 +43,7 @@ const protectedRoutes = [
 const authRoutes = ['/login', '/signup', '/forgot-password'];
 
 // Public routes that don't require authentication and don't redirect
-const publicRoutes = ['/results', '/unauthorized'];
+const publicRoutes = ['/', '/unauthorized'];
 
 function isProtectedRoute(pathname: string): boolean {
   return protectedRoutes.some(route => pathname.startsWith(route));

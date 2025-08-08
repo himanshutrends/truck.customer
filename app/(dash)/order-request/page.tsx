@@ -1,14 +1,19 @@
-"use client"
+import * as React from "react";
+import { getOrderRequests } from './server/actions/order-request';
+import { OrderRequestsClient } from './components/order-requests-client';
 
-import * as React from "react"
-import { DataTable } from "./data-table"
+export default async function OrderRequestPage() {
+  const response = await getOrderRequests();
+  
+  const orderRequests = response.success ? response.data || [] : [];
+  
+  if (!response.success) {
+    console.error('Failed to fetch order requests:', response.error);
+  }
 
-export default function OrderRequestPage() {
   return (
     <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-      <DataTable 
-        data={[]} 
-      />
+      <OrderRequestsClient initialData={orderRequests} />
     </div>
-  )
+  );
 }

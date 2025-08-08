@@ -1,0 +1,144 @@
+'use server';
+
+import { AuthManager } from '@/lib/auth-manager';
+import { ApiHandler } from '@/lib/api';
+import { ApiResponse } from '@/lib/types';
+
+// Types for order request
+export interface OrderRequest {
+    id: string;
+    origin_pincode: string;
+    destination_pincode: string;
+    origin_city: string;
+    destination_city: string;
+    pickup_date: string;
+    drop_date: string;
+    weight: string;
+    weight_unit: string;
+    urgency_level: string;
+    status: string;
+    quotations_count: number;
+    total_amount_range: {
+        min: number;
+        max: number;
+    } | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface OrderRequestListResponse {
+    results: OrderRequest[];
+    count: number;
+    next: string | null;
+    previous: string | null;
+}
+
+/**
+ * Get all order requests for the current user
+ */
+export async function getOrderRequests(): Promise<ApiResponse<OrderRequest[]>> {
+    try {
+        // 1. Authentication check
+        const user = await AuthManager.getCurrentUser();
+        if (!user) {
+            return {
+                success: false,
+                error: 'User not authenticated'
+            };
+        }
+
+        // 2. Authorization check - customers, managers, and admins can view order requests
+        if (!['customer', 'manager', 'admin'].includes(user.role)) {
+            return {
+                success: false,
+                error: 'Insufficient permissions to view order requests'
+            };
+        }
+
+        console.log('Fetching order requests for user:', user.email);
+
+        // 3. API call to get order requests
+        const response = await ApiHandler.authGet<OrderRequest[]>('api/quotations/orders/');
+
+        if (response.success && response.data) {
+            console.log('Order requests fetched successfully:', response.data.length);
+            return {
+                success: true,
+                data: response.data
+            };
+        }
+
+        return {
+            success: false,
+            error: response.error || 'Failed to fetch order requests'
+        };
+    } catch (error) {
+        console.error('getOrderRequests error:', error);
+        return {
+            success: false,
+            error: 'Failed to fetch order requests'
+        };
+    }
+}
+
+/**
+ * Get a specific order request by ID
+ */
+export async function getOrderRequestById(id: string): Promise<ApiResponse<OrderRequest>> {
+    try {
+        const user = await AuthManager.getCurrentUser();
+        if (!user) {
+            return {
+                success: false,
+                error: 'User not authenticated'
+            };
+        }
+
+        if (!['customer', 'manager', 'admin'].includes(user.role)) {
+            return {
+                success: false,
+                error: 'Insufficient permissions to view order request'
+            };
+        }
+
+        const response = await ApiHandler.authGet<OrderRequest>(`api/quotations/requests/${id}/`);
+        return response;
+    } catch (error) {
+        console.error('getOrderRequestById error:', error);
+        return {
+            success: false,
+            error: 'Failed to fetch order request'
+        };
+    }
+}
+
+/**
+ * Cancel an order request
+ */
+export async function cancelOrderRequest(id: string): Promise<ApiResponse<{ message: string }>> {
+    try {
+        const user = await AuthManager.getCurrentUser();
+        if (!user) {
+            return {
+                success: false,
+                error: 'User not authenticated'
+            };
+        }
+
+        if (!['customer', 'manager', 'admin'].includes(user.role)) {
+            return {
+                success: false,
+                error: 'Insufficient permissions to cancel order request'
+            };
+        }
+
+        const response = await ApiHandler.authDelete<{ message: string }>(`api/quotations/requests/${id}/`);
+        return response;
+    } catch (error) {
+        console.error('cancelOrderRequest error:', error);
+        return {
+            success: false,
+            error: 'Failed to cancel order request'
+        };
+    }
+}

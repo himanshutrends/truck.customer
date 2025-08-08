@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
+import { QuotationProvider } from "@/contexts/quotation-context";
 import { AuthManager } from "@/lib/auth-manager";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -40,7 +41,9 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider initialUser={initialUser}>
-            {children}
+            <QuotationProvider>
+              {children}
+            </QuotationProvider>
           </AuthProvider>
           <Toaster />
         </ThemeProvider>
