@@ -1,7 +1,7 @@
 'use server';
 
 import { AuthManager } from '@/lib/auth-manager';
-import { ApiHandler } from '@/lib/api';
+import { authAPIDelete, authAPIGet } from '@/lib/api';
 import { ApiResponse } from '@/lib/types';
 
 // Types for order request
@@ -47,27 +47,19 @@ export async function getOrderRequests(): Promise<ApiResponse<OrderRequest[]>> {
             };
         }
 
-        // 2. Authorization check - customers, managers, and admins can view order requests
-        if (!['customer', 'manager', 'admin'].includes(user.role)) {
-            return {
-                success: false,
-                error: 'Insufficient permissions to view order requests'
-            };
+        let response: ApiResponse<OrderRequest[]> = { success: false, data: [] };
+
+        if (user.role === 'customer') {
+            response = await authAPIGet<OrderRequest[]>('api/quotations/customer/requests/');
+            console.log('Order requests fetched successfully:', response);
         }
 
-        console.log('Fetching order requests for user:', user.email);
-
-        // 3. API call to get order requests
-        const response = await ApiHandler.authGet<OrderRequest[]>('api/quotations/orders/');
-
         if (response.success && response.data) {
-            console.log('Order requests fetched successfully:', response.data.length);
             return {
                 success: true,
                 data: response.data
             };
         }
-
         return {
             success: false,
             error: response.error || 'Failed to fetch order requests'
@@ -86,22 +78,7 @@ export async function getOrderRequests(): Promise<ApiResponse<OrderRequest[]>> {
  */
 export async function getOrderRequestById(id: string): Promise<ApiResponse<OrderRequest>> {
     try {
-        const user = await AuthManager.getCurrentUser();
-        if (!user) {
-            return {
-                success: false,
-                error: 'User not authenticated'
-            };
-        }
-
-        if (!['customer', 'manager', 'admin'].includes(user.role)) {
-            return {
-                success: false,
-                error: 'Insufficient permissions to view order request'
-            };
-        }
-
-        const response = await ApiHandler.authGet<OrderRequest>(`api/quotations/requests/${id}/`);
+        const response = await authAPIGet<OrderRequest>(`api/quotations/requests/${id}/`);
         return response;
     } catch (error) {
         console.error('getOrderRequestById error:', error);
@@ -117,22 +94,7 @@ export async function getOrderRequestById(id: string): Promise<ApiResponse<Order
  */
 export async function cancelOrderRequest(id: string): Promise<ApiResponse<{ message: string }>> {
     try {
-        const user = await AuthManager.getCurrentUser();
-        if (!user) {
-            return {
-                success: false,
-                error: 'User not authenticated'
-            };
-        }
-
-        if (!['customer', 'manager', 'admin'].includes(user.role)) {
-            return {
-                success: false,
-                error: 'Insufficient permissions to cancel order request'
-            };
-        }
-
-        const response = await ApiHandler.authDelete<{ message: string }>(`api/quotations/requests/${id}/`);
+        const response = await authAPIDelete<{ message: string }>(`api/quotations/requests/${id}/`);
         return response;
     } catch (error) {
         console.error('cancelOrderRequest error:', error);

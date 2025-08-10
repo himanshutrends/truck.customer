@@ -8,6 +8,7 @@ const routePermissions: Record<string, UserRole[]> = {
   '/dashboard': ['admin', 'manager', 'customer', 'vendor'],
   '/order': ['admin', 'manager', 'customer', 'vendor'],
   '/order-request': ['admin', 'manager', 'customer', 'vendor'],
+  '/quote': ['admin', 'manager', 'customer', 'vendor'],
   '/quote-requests': ['admin', 'manager', 'vendor', 'customer'],
   '/profile': ['admin', 'manager', 'customer', 'vendor'],
   '/search-shipments': ['admin', 'manager'],

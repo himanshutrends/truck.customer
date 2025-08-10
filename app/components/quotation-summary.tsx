@@ -96,6 +96,8 @@ export function QuotationSummary({ className = '', showActions = true }: Quotati
 
       const response = await createQuotationRequest(quotationRequest);
 
+      console.log('Quotation response:', response);
+
       if (response.success) {
         setSubmitMessage({ 
           type: 'success', 

@@ -22,7 +22,7 @@ export interface QuotationSearchParams {
 
 export interface VehicleDetails {
   id: string;
-  vendorId: string;
+  vendorId: number;
   vendorName: string;
   name: string;
   badge?: string;
@@ -78,7 +78,7 @@ export interface QuotationItem {
 export interface Quotation {
   id: string;
   searchParams: QuotationSearchParams;
-  vendorId: string;
+  vendorId: number;
   vendorName: string;
   items: QuotationItem[];
   totalAmount: number;
@@ -95,7 +95,7 @@ interface QuotationState {
   quotationHistory: Quotation[];
   pendingVendorSwitch: {
     vehicle: VehicleDetails;
-    newVendorId: string;
+    newVendorId: number;
     newVendorName: string;
   } | null;
   isLoading: boolean;

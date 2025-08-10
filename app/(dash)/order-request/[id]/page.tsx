@@ -3,9 +3,9 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { 
-  IconArrowLeft, 
-  IconDots, 
+import {
+  IconArrowLeft,
+  IconDots,
   IconFileExport,
   IconArrowUp
 } from "@tabler/icons-react"
@@ -14,20 +14,16 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { getOrderRequestById } from "./server/actions/order-request-detail"
 import { QuotationActions } from "./components/quotation-actions"
 
-interface OrderRequestDetailProps {
-  params: {
-    id: string
-  }
-}
+interface OrderRequestDetailProps { params: { id: string } }
 
 // Helper function to format date
 const formatDate = (dateString: string): string => {
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   } catch {
     return dateString;
@@ -46,7 +42,7 @@ const formatCurrency = (amount: string): string => {
 
 export default async function OrderRequestDetailPage({ params }: OrderRequestDetailProps) {
   const response = await getOrderRequestById(params.id)
-  
+
   if (!response.success || !response.data) {
     return (
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
@@ -67,8 +63,7 @@ export default async function OrderRequestDetailPage({ params }: OrderRequestDet
       </div>
     )
   }
-
-  const { order_request: orderRequest, quotations } = response.data
+  const orderRequest = response.data
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
@@ -97,7 +92,7 @@ export default async function OrderRequestDetailPage({ params }: OrderRequestDet
             <div className="flex items-center gap-3">
               <CardTitle>Order Request #{orderRequest.id}</CardTitle>
               <Badge variant="outline" className="px-3 py-1 bg-blue-50 text-blue-600 border-blue-200">
-                {quotations.length} Quotes Available
+                {orderRequest.quotations.length} Quotes Available
               </Badge>
             </div>
           </div>
@@ -111,7 +106,7 @@ export default async function OrderRequestDetailPage({ params }: OrderRequestDet
             </Button>
           </CardAction>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           {/* Order Details */}
           <div>
@@ -188,8 +183,8 @@ export default async function OrderRequestDetailPage({ params }: OrderRequestDet
                   <TableRow className="bg-primary/10">
                     <TableHead className="w-12">
                       <Checkbox
-                          className="h-4 w-4"
-                        />
+                        className="h-4 w-4"
+                      />
                     </TableHead>
                     <TableHead className="font-medium text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -219,7 +214,7 @@ export default async function OrderRequestDetailPage({ params }: OrderRequestDet
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {quotations.map((quotation) => (
+                  {orderRequest.quotations.map((quotation) => (
                     <TableRow key={quotation.id}>
                       <TableCell>
                         <Checkbox
@@ -252,8 +247,8 @@ export default async function OrderRequestDetailPage({ params }: OrderRequestDet
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <QuotationActions 
-                          quotationId={quotation.id} 
+                        <QuotationActions
+                          quotationId={quotation.id}
                           currentStatus={quotation.status}
                         />
                       </TableCell>

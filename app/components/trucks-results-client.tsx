@@ -6,13 +6,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FiltersPanel } from '@/app/components/filters-panel';
 import { VehicleCard } from '@/app/components/vehicle-card';
 import { SearchForm } from '@/app/components/search-form';
-import { QuotationSummary } from '@/app/components/quotation-summary';
+import { QuotationForm } from '@/app/components/quotation-form';
 import { VendorSwitchDialog } from '@/app/components/vendor-switch-dialog';
+import { HomeHeader } from '@/app/components/home-header';
 import { useQuotation, VehicleDetails } from '@/contexts/quotation-context';
 import { searchTrucks } from '@/app/server/actions/trucks';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DateRange } from 'react-day-picker';
-import { TruckType } from '@/lib/types';
+import { TruckType, SessionUser } from '@/lib/types';
 
 interface SearchFormData {
   originPinCode: string;
@@ -25,17 +26,26 @@ interface SearchFormData {
 interface TrucksResultsClientProps {
   initialVehicles: VehicleDetails[];
   truckTypes: TruckType[];
+  initialUser: SessionUser | null;
 }
 
-export function TrucksResultsClient({ initialVehicles, truckTypes }: TrucksResultsClientProps) {
+export function TrucksResultsClient({ initialVehicles, truckTypes, initialUser }: TrucksResultsClientProps) {
   const { getSelectedVehicleCount, getTotalQuotationAmount, setSearchParams, state } = useQuotation();
   const [vehicles, setVehicles] = useState<VehicleDetails[]>(initialVehicles);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showQuotationForm, setShowQuotationForm] = useState(false);
 
   const selectedVehicleCount = getSelectedVehicleCount();
   const totalAmount = getTotalQuotationAmount();
+
+  // Auto-show quotation form when vehicles are selected
+  React.useEffect(() => {
+    if (selectedVehicleCount > 0 && !showQuotationForm) {
+      setShowQuotationForm(true);
+    }
+  }, [selectedVehicleCount, showQuotationForm]);
 
   // Handle search form submission
   const handleSearch = useCallback(async (searchData: SearchFormData) => {
@@ -79,9 +89,10 @@ export function TrucksResultsClient({ initialVehicles, truckTypes }: TrucksResul
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className='absolute top-0 left-0 right-0 bg-primary h-26 z-0'>
-      </div>
-      <div className="max-w-7xl mx-auto px-2 py-8 relative z-10">
+      {/* Home Header */}
+      <HomeHeader initialUser={initialUser} />
+      
+      <div className="max-w-7xl mx-auto px-2 py-8">
 
         {/* Search Form */}
         <SearchForm onSearch={handleSearch} />
@@ -110,6 +121,7 @@ export function TrucksResultsClient({ initialVehicles, truckTypes }: TrucksResul
               {selectedVehicleCount > 0 && (
                 <Button
                   className="bg-green-600 hover:bg-green-700"
+                  onClick={() => setShowQuotationForm(true)}
                 >
                   View Quotation (₹{totalAmount.toLocaleString()})
                 </Button>
@@ -218,12 +230,17 @@ export function TrucksResultsClient({ initialVehicles, truckTypes }: TrucksResul
             </div>
           </div>
 
-          {/* Quotation Summary Sidebar */}
-          <div className="lg:w-80">
-            <div className="sticky top-6">
-              <QuotationSummary />
+          {/* Quotation Form Sidebar */}
+          {showQuotationForm && (
+            <div className="lg:w-96">
+              <div className="sticky top-6">
+                <QuotationForm 
+                  onClose={() => setShowQuotationForm(false)}
+                  className="h-[calc(100vh-2rem)] max-h-[800px]"
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Vendor Switch Dialog */}

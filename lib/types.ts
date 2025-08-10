@@ -47,6 +47,7 @@ export interface TruckSearchResult {
   availability_status: string;
   base_price_per_km: string;
   current_location_address: string;
+  vendor_id: number;
   vendor_name: string;
   vendor_phone: string;
   primary_image?: string;

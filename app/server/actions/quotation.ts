@@ -4,7 +4,7 @@ import { ApiResponse, QuotationRequestResponse } from '@/lib/types';
 
 // Types for quotation request
 export interface QuotationRequest {
-  vendorId: string;
+  vendorId: number;
   vendorName: string;
   items: QuotationItem[];
   totalAmount: number;

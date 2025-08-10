@@ -276,7 +276,7 @@ const columns: ColumnDef<OrderRequest>[] = [
       
       return (
         <Badge variant="outline" className={className}>
-          {status.replace('_', ' ').toUpperCase()}
+          {status?.replace('_', ' ').toUpperCase()}
         </Badge>
       );
     },

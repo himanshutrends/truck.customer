@@ -23,6 +23,8 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = useState(false);
   const [isMoreDetailsOpen, setIsMoreDetailsOpen] = useState(false);
   
+   console.log('VehicleCard rendered for vehicle:', vehicle);
+
   const { 
     isVehicleSelected, 
     addVehicleToQuotation, 
@@ -269,8 +271,17 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline">Negotiate Quote</Button>
-          <Button>
+          <Button 
+            variant="outline"
+            onClick={() => handleSelectionChange(true)}
+            disabled={!selectionCheck.canSelect && !isSelected}
+          >
+            Negotiate Quote
+          </Button>
+          <Button
+            onClick={() => handleSelectionChange(true)}
+            disabled={!selectionCheck.canSelect && !isSelected}
+          >
             Book this vehicle
           </Button>
         </div>

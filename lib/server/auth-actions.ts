@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import CryptoJS from 'crypto-js';
 import { User, SessionUser, ApiResponse } from '../types';
+import { apiPost } from '../api';
 
 // Configuration
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -220,38 +221,12 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   }
 }
 
-/**
- * Make authenticated API request
- */
-export async function apiRequest<T>(
-  endpoint: string,
-  options: {
-    method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-    body?: Record<string, unknown>;
-    headers?: Record<string, string>;
-  } = {}
-): Promise<ApiResponse<T>> {
-  // Import here to avoid circular dependency
-  const { ApiHandler } = await import('../api');
-
-  return ApiHandler.request<T>(endpoint, {
-    ...options,
-    requireAuth: true,
-  });
-}
 
 /**
  * Login user
  */
 export async function login(email: string, password: string): Promise<ApiResponse<{ user: User; tokens: { access: string; refresh: string } }>> {
-  // Import here to avoid circular dependency
-  const { ApiHandler } = await import('../api');
-
-  const response = await ApiHandler.post<{ user: User; tokens: { access: string; refresh: string } }>(
-    'api/auth/login/',
-    { email, password }
-  );
-
+  const response = await apiPost<{ user: User; tokens: { access: string; refresh: string } }>('api/auth/login/', { email, password });
   if (response.success && response.data) {
     // Store tokens and user data
     await setTokens(response.data.tokens.access, response.data.tokens.refresh, response.data.user);

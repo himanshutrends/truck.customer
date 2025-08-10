@@ -30,7 +30,7 @@ export function transformTruckResultsToVehicleDetails(
 
         return {
             id: truck.id,
-            vendorId: `vendor_${truck.vendor_name.toLowerCase().replace(/\s+/g, '_')}`,
+            vendorId: truck.vendor_id,
             vendorName: truck.vendor_name,
             name: truck.vendor_name,
             badge: generateBadge(truck, index),

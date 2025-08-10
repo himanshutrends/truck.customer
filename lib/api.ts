@@ -105,7 +105,7 @@ async function request<T>(
 }
 
 // Convenience methods for authenticated requests
-export async function authAPGet<T>(endpoint: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+export async function authAPIGet<T>(endpoint: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
   return request<T>(endpoint, { method: 'GET', requireAuth: true, headers });
 }
 

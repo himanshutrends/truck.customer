@@ -1,7 +1,7 @@
 'use server';
 
 import { AuthManager } from '@/lib/auth-manager';
-import { ApiHandler } from '@/lib/api';
+import { authAPIGet, authAPIPost } from '@/lib/api';
 import { ApiResponse } from '@/lib/types';
 
 // Types for order request detail
@@ -49,8 +49,7 @@ export interface Quotation {
     updated_at: string;
 }
 
-export interface OrderRequestDetailResponse {
-    order_request: OrderRequestDetail;
+export interface OrderRequestDetailResponse extends OrderRequestDetail {
     quotations: Quotation[];
 }
 
@@ -67,7 +66,6 @@ export async function getOrderRequestById(orderId: string): Promise<ApiResponse<
                 error: 'User not authenticated'
             };
         }
-
         // 2. Authorization check - customers, managers, and admins can view order request details
         if (!['admin', 'manager', 'customer'].includes(user.role)) {
             return {
@@ -75,10 +73,9 @@ export async function getOrderRequestById(orderId: string): Promise<ApiResponse<
                 error: 'Insufficient permissions'
             };
         }
-
         // 3. API call to get order request details
-        const response = await ApiHandler.authGet<OrderRequestDetailResponse>(`api/quotations/orders/${orderId}/`);
-
+        const response = await authAPIGet<OrderRequestDetailResponse>(`api/quotations/requests/${orderId}/`);
+        console.log('Order request details fetched successfully:', response);
         return response;
     } catch (error) {
         console.error('getOrderRequestById error:', error);
@@ -101,8 +98,7 @@ export async function acceptQuotation(quotationId: number): Promise<ApiResponse<
                 error: 'Insufficient permissions'
             };
         }
-
-        const response = await ApiHandler.authPost<{ message: string }>(`api/quotations/${quotationId}/accept/`, {});
+        const response = await authAPIPost<{ message: string }>(`api/quotations/${quotationId}/accept/`, {});
         return response;
     } catch (error) {
         console.error('acceptQuotation error:', error);
@@ -125,8 +121,7 @@ export async function rejectQuotation(quotationId: number): Promise<ApiResponse<
                 error: 'Insufficient permissions'
             };
         }
-
-        const response = await ApiHandler.authPost<{ message: string }>(`api/quotations/${quotationId}/reject/`, {});
+        const response = await authAPIPost<{ message: string }>(`api/quotations/${quotationId}/reject/`, {});
         return response;
     } catch (error) {
         console.error('rejectQuotation error:', error);

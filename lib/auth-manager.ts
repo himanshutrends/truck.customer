@@ -9,7 +9,6 @@ export {
   clearTokens,
   verifyToken,
   getCurrentUser,
-  apiRequest,
   login,
   logout
 } from './server/auth-actions';
@@ -51,17 +50,6 @@ export class AuthManager {
     return getCurrentUser();
   }
 
-  static async apiRequest<T>(
-    endpoint: string,
-    options: {
-      method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-      body?: Record<string, unknown>;
-      headers?: Record<string, string>;
-    } = {}
-  ): Promise<ApiResponse<T>> {
-    const { apiRequest } = await import('./server/auth-actions');
-    return apiRequest<T>(endpoint, options);
-  }
 
   static async login(email: string, password: string): Promise<ApiResponse<{ user: User; tokens: { access: string; refresh: string } }>> {
     const { login } = await import('./server/auth-actions');
