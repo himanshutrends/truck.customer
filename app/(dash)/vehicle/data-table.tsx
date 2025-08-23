@@ -83,7 +83,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Vehicle } from "./server/actions/vehicle"
+import { Vehicle } from "@/lib/types"
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: string }) {
@@ -143,7 +143,7 @@ const columns: ColumnDef<Vehicle>[] = [
     cell: ({ row }) => {
       return (
         <Link 
-          href={`/vehicle/${row.original.registration_number}`}
+          href={`/vehicle/${row.original.id}`}
           className="font-medium text-primary hover:underline"
         >
           {row.original.registration_number}

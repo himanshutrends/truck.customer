@@ -22,7 +22,7 @@ export interface ApiResponse<T = unknown> {
   errors?: Record<string, string[]>;
 }
 
-export type UserRole = 'admin' | 'customer' | 'driver' | 'manager' | 'vendor';
+export type UserRole = "admin" | "customer" | "driver" | "manager" | "vendor";
 
 export interface SessionUser extends User {
   isAuthenticated: boolean;
@@ -119,4 +119,115 @@ export interface TruckSearchParams {
   vendor_name?: string;
   page?: number;
   limit?: number;
+}
+
+export interface VehicleType {
+  created_at: string;
+  id: number;
+  description: string;
+  name: string;
+}
+
+export interface Vehicle {
+  id: string;
+  truck_type: VehicleType;
+  registration_number: string;
+  capacity: string;
+  make: string;
+  model: string;
+  year: string;
+  color: string;
+  availability_status: string;
+  base_price_per_km: string;
+  current_location_latitude: string;
+  current_location_longitude: string;
+  current_location_address: string;
+  vendor_name: string;
+  vendor_phone: string;
+  images: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Types for order request
+export interface OrderRequest {
+  id: string;
+  origin_pincode: string;
+  destination_pincode: string;
+  origin_city: string;
+  destination_city: string;
+  pickup_date: string;
+  drop_date: string;
+  weight: string;
+  weight_unit: string;
+  status: string;
+  quotations_count: number;
+  total_amount_range: {
+    min: number;
+    max: number;
+  } | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderRequestListResponse {
+  results: OrderRequest[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
+
+export interface QuotationItem {
+  id: string;
+  vehicle_id: string;
+  vehicle_details?: {
+    registration_number: string;
+    truck_type: string;
+    capacity: string;
+    make: string;
+    model: string;
+  };
+  quantity: number;
+  unit_price: string;
+  total_price: string;
+}
+
+export interface Negotiation {
+  id: string;
+  quotation: string;
+  initiated_by: "customer" | "vendor";
+  proposed_amount: string;
+  message: string;
+  proposed_base_price?: string;
+  proposed_fuel_charges?: string;
+  proposed_toll_charges?: string;
+  proposed_loading_charges?: string;
+  proposed_unloading_charges?: string;
+  proposed_additional_charges?: string;
+  created_at: string;
+}
+
+export interface Quotation {
+  id: string; //
+  quotation_request_id: string; //
+  vendor: string; //
+  vendor_name: string; //
+  items: QuotationItem[];
+  negotiations: Negotiation[];
+  total_amount: string; //
+  terms_and_conditions: string; //
+  validity_hours: number; //
+  status:
+    | "pending"
+    | "accepted"
+    | "rejected"
+    | "expired"
+    | "draft"
+    | "negotiating"
+    | "sent"; //
+  urgency_level: string;
+  is_active: boolean; //
+  created_at: string; //
+  updated_at: string; //
 }

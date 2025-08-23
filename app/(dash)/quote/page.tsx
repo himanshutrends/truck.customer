@@ -1,12 +1,17 @@
 import { AuthManager } from "@/lib/auth-manager";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { AlertTriangle, FileText } from "lucide-react";
 import { getQuotations } from "./server/actions/quotation";
 import { QuotationContainer } from "./components/quotation-container";
 
 export default async function QuotePage() {
   const user = await AuthManager.getCurrentUser();
-  
+
   if (!user) {
     return (
       <div className="container mx-auto p-6">
@@ -33,8 +38,8 @@ export default async function QuotePage() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Quotations</h1>
           <p className="text-muted-foreground mt-2">
-            {user.role === 'customer' 
-              ? "View and manage quotations from vendors" 
+            {user.role === "customer"
+              ? "View and manage quotations from vendors"
               : "Manage your quotations"}
           </p>
         </div>
@@ -45,7 +50,8 @@ export default async function QuotePage() {
             </div>
             <CardTitle>Error Loading Quotations</CardTitle>
             <CardDescription>
-              {quotationsResponse.error || "Failed to load quotations. Please try again."}
+              {quotationsResponse.error ||
+                "Failed to load quotations. Please try again."}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -55,13 +61,15 @@ export default async function QuotePage() {
 
   const quotations = quotationsResponse.data || [];
 
+  console.log("Fetched quotations:", quotations);
+
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Quotations</h1>
         <p className="text-muted-foreground mt-2">
-          {user.role === 'customer' 
-            ? "View and manage quotations from vendors" 
+          {user.role === "customer"
+            ? "View and manage quotations from vendors"
             : "Manage your quotations"}
         </p>
       </div>
@@ -74,7 +82,7 @@ export default async function QuotePage() {
             </div>
             <CardTitle>No quotations found</CardTitle>
             <CardDescription>
-              {user.role === 'customer'
+              {user.role === "customer"
                 ? "You don't have any quotations yet. Create a shipment request to receive quotations from vendors."
                 : "You haven't created any quotations yet."}
             </CardDescription>

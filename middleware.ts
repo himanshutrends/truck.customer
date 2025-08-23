@@ -4,10 +4,9 @@ import { AuthManager } from './lib/auth-manager';
 
 // Define route permissions
 const routePermissions: Record<string, UserRole[]> = {
-  '/': ['admin', 'manager', 'driver', 'customer', 'vendor'],
   '/dashboard': ['admin', 'manager', 'customer', 'vendor'],
   '/order': ['admin', 'manager', 'customer', 'vendor'],
-  '/order-request': ['admin', 'manager', 'customer', 'vendor'],
+  '/order-request': ['customer'],
   '/quote': ['admin', 'manager', 'customer', 'vendor'],
   '/quote-requests': ['admin', 'manager', 'vendor', 'customer'],
   '/profile': ['admin', 'manager', 'customer', 'vendor'],
@@ -44,7 +43,7 @@ const protectedRoutes = [
 const authRoutes = ['/login', '/signup', '/forgot-password'];
 
 // Public routes that don't require authentication and don't redirect
-const publicRoutes = ['/', '/unauthorized'];
+const publicRoutes = ['/unauthorized'];
 
 function isProtectedRoute(pathname: string): boolean {
   return protectedRoutes.some(route => pathname.startsWith(route));
@@ -152,17 +151,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Handle root route
+  // Handle root route - allow everyone to access home page
   if (pathname === '/') {
-    if (user) {
-      // Authenticated user, redirect to their dashboard
-      console.log(`Redirecting authenticated user from ${pathname} to /dashboard`);
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    } else {
-      // Not authenticated, redirect to login
-      console.log(`Redirecting unauthenticated user from ${pathname} to /login`);
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
+    console.log(`Allowing access to home page: ${pathname}`);
+    return NextResponse.next();
   }
 
   console.log(`Allowing access to ${pathname}`);

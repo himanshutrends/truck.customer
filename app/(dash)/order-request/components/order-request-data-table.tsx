@@ -67,7 +67,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { OrderRequest } from '../server/actions/order-request';
+import { OrderRequest } from '@/lib/types';
 
 // Updated schema to match API response
 export const schema = z.object({
@@ -226,33 +226,6 @@ const columns: ColumnDef<OrderRequest>[] = [
     },
   },
   {
-    accessorKey: 'urgency_level',
-    header: () => (
-      <div className="flex items-center gap-1">
-        URGENCY
-        <IconArrowUp className="h-3 w-3" />
-      </div>
-    ),
-    cell: ({ row }) => {
-      const urgency = row.original.urgency_level;
-      let className = 'px-2 py-1 border';
-      
-      if (urgency === 'urgent') {
-        className += ' bg-red-50 text-red-600 border-red-200 dark:bg-red-900 dark:text-red-300';
-      } else if (urgency === 'express') {
-        className += ' bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900 dark:text-orange-300';
-      } else {
-        className += ' bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900 dark:text-blue-300';
-      }
-      
-      return (
-        <Badge variant="outline" className={className}>
-          {urgency.toUpperCase()}
-        </Badge>
-      );
-    },
-  },
-  {
     accessorKey: 'status',
     header: () => (
       <div className="flex items-center gap-1">
@@ -345,8 +318,7 @@ export function DataTable({ data: initialData }: DataTableProps) {
       return (
         item.origin_pincode.toLowerCase().includes(searchLower) ||
         item.destination_pincode.toLowerCase().includes(searchLower) ||
-        item.status.toLowerCase().includes(searchLower) ||
-        item.urgency_level.toLowerCase().includes(searchLower)
+        item.status.toLowerCase().includes(searchLower)
       );
     });
   }, [initialData, searchQuery]);

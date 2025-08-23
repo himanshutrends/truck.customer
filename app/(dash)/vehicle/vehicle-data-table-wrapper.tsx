@@ -4,7 +4,8 @@ import * as React from "react"
 import { DataTable } from "./data-table"
 import { ModalForm } from "@/components/modal-form"
 import { AddVehicleForm } from "./add-form"
-import { addVehicle, Vehicle } from "./server/actions/vehicle"
+import { addVehicle } from "./server/actions/vehicle"
+import { Vehicle } from "@/lib/types"
 import { toast } from "sonner"
 
 // Client component wrapper for the data table with modal functionality

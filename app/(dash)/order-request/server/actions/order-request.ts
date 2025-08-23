@@ -3,35 +3,7 @@
 import { AuthManager } from '@/lib/auth-manager';
 import { authAPIDelete, authAPIGet } from '@/lib/api';
 import { ApiResponse } from '@/lib/types';
-
-// Types for order request
-export interface OrderRequest {
-    id: string;
-    origin_pincode: string;
-    destination_pincode: string;
-    origin_city: string;
-    destination_city: string;
-    pickup_date: string;
-    drop_date: string;
-    weight: string;
-    weight_unit: string;
-    urgency_level: string;
-    status: string;
-    quotations_count: number;
-    total_amount_range: {
-        min: number;
-        max: number;
-    } | null;
-    created_at: string;
-    updated_at: string;
-}
-
-export interface OrderRequestListResponse {
-    results: OrderRequest[];
-    count: number;
-    next: string | null;
-    previous: string | null;
-}
+import { OrderRequest } from '@/lib/types';
 
 /**
  * Get all order requests for the current user

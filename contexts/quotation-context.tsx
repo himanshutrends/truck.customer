@@ -9,7 +9,7 @@ export interface QuotationSearchParams {
   destinationPinCode: string;
   originLocation?: string;
   destinationLocation?: string;
-  weight: string;
+  weight: number;
   weightUnit: 'kg' | 'tonnes';
   vehicleType?: string;
   pickupDate: Date;
@@ -28,7 +28,7 @@ export interface VehicleDetails {
   badge?: string;
   price: string;
   vehicleType: string;
-  maxWeight: string;
+  maxWeight: number;
   model: string;
   gpsNumber: string;
   estimatedDelivery: string;
@@ -38,15 +38,15 @@ export interface VehicleDetails {
     price: string;
   };
   weight: {
-    amount: string;
-    rate: string;
-    total: string;
+    amount: number;
+    rate: number;
+    total: number;
   };
   deliveryType: {
     type: string;
-    price: string;
+    price: number;
   };
-  total: string;
+  total: number;
   specs?: {
     loadCapacity: string;
     dimensions: string;
@@ -108,7 +108,7 @@ type QuotationAction =
   | { type: 'ADD_VEHICLE_TO_QUOTATION'; payload: VehicleDetails }
   | { type: 'REMOVE_VEHICLE_FROM_QUOTATION'; payload: string }
   | { type: 'UPDATE_VEHICLE_QUANTITY'; payload: { vehicleId: string; quantity: number } }
-  | { type: 'SET_PENDING_VENDOR_SWITCH'; payload: { vehicle: VehicleDetails; newVendorId: string; newVendorName: string } }
+  | { type: 'SET_PENDING_VENDOR_SWITCH'; payload: { vehicle: VehicleDetails; newVendorId: number; newVendorName: string } }
   | { type: 'CONFIRM_VENDOR_SWITCH' }
   | { type: 'CANCEL_VENDOR_SWITCH' }
   | { type: 'CLEAR_QUOTATION' }
@@ -156,7 +156,7 @@ function quotationReducer(state: QuotationState, action: QuotationAction): Quota
             quantity: 1,
             selectedAt: new Date(),
           }],
-          totalAmount: parseFloat(vehicle.total.replace('₹', '').replace(',', '')),
+          totalAmount: vehicle.total,
           status: 'draft',
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -196,7 +196,7 @@ function quotationReducer(state: QuotationState, action: QuotationAction): Quota
         }
 
         const totalAmount = updatedItems.reduce((sum, item) => 
-          sum + (parseFloat(item.vehicle.total.replace('₹', '').replace(',', '')) * item.quantity), 0
+          sum + (item.vehicle.total * item.quantity), 0
         );
 
         return {
@@ -239,7 +239,7 @@ function quotationReducer(state: QuotationState, action: QuotationAction): Quota
       }
 
       const totalAmount = updatedItems.reduce((sum, item) => 
-        sum + (parseFloat(item.vehicle.total.replace('₹', '').replace(',', '')) * item.quantity), 0
+        sum + (item.vehicle.total * item.quantity), 0
       );
 
       return {
@@ -264,7 +264,7 @@ function quotationReducer(state: QuotationState, action: QuotationAction): Quota
       );
 
       const totalAmount = updatedItems.reduce((sum, item) => 
-        sum + (parseFloat(item.vehicle.total.replace('₹', '').replace(',', '')) * item.quantity), 0
+        sum + (item.vehicle.total * item.quantity), 0
       );
 
       return {
@@ -305,7 +305,7 @@ function quotationReducer(state: QuotationState, action: QuotationAction): Quota
           quantity: 1,
           selectedAt: new Date(),
         }],
-        totalAmount: parseFloat(state.pendingVendorSwitch.vehicle.total.replace('₹', '').replace(',', '')),
+        totalAmount: state.pendingVendorSwitch.vehicle.total,
         status: 'draft',
         createdAt: new Date(),
         updatedAt: new Date(),

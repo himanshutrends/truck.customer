@@ -43,7 +43,6 @@ async function request<T>(
     // Add authorization header if auth is required
     if (requireAuth) {
       const token = await getTokenAction();
-      console.log("API Request Token from request handler:", token);
       if (!token) {
         return {
           success: false,
@@ -59,20 +58,12 @@ async function request<T>(
       requestBody = body instanceof FormData ? body : JSON.stringify(body);
     }
 
-    console.log(`API Request: ${method} ${url}`, {
-      headers: requestHeaders,
-      body: requestBody,
-    });
-
     // Make request
     const response = await fetch(url, {
       method,
       headers: requestHeaders,
       body: requestBody,
     });
-
-    console.log(`API Response: ${response.status} ${response.statusText}`);
-
 
     // Handle response
     if (!response.ok) {

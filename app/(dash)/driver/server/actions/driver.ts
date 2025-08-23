@@ -1,7 +1,7 @@
 'use server';
 
 import { AuthManager } from '@/lib/auth-manager';
-import { ApiHandler } from '@/lib/api';
+import { authAPIGet, authAPIPost, authAPIPut, authAPIDelete } from '@/lib/api';
 import { ApiResponse } from '@/lib/types';
 
 export interface AssignedTruckInfo {
@@ -56,8 +56,8 @@ export async function getVendorDrivers(): Promise<ApiResponse<Driver[]>> {
 
     console.log(`getVendorDrivers: Making API request for user ${user.email}`);
 
-    // Make API call using ApiHandler
-    const response = await ApiHandler.authGet<Driver[]>('api/trucks/vendor/drivers/');
+    // Make API call using authAPIGet
+    const response = await authAPIGet<Driver[]>('api/trucks/vendor/drivers/');
 
     console.log("getVendorDrivers: Request completed", response.success ? 'successfully' : 'with error');
     return response;
@@ -66,6 +66,37 @@ export async function getVendorDrivers(): Promise<ApiResponse<Driver[]>> {
     return {
       success: false,
       error: 'Failed to fetch drivers. Please try again.'
+    };
+  }
+}
+
+/**
+ * Get a specific driver by ID (vendor only)
+ */
+export async function getVendorDriverById(id: string): Promise<ApiResponse<Driver>> {
+  try {
+    const user = await AuthManager.getCurrentUser();
+    if (!user) {
+      return {
+        success: false,
+        error: 'User not authenticated'
+      };
+    }
+
+    if (user.role !== 'vendor') {
+      return {
+        success: false,
+        error: 'Access denied. Only vendors can view their drivers.'
+      };
+    }
+
+    const response = await authAPIGet<Driver>(`api/trucks/vendor/drivers/${id}`);
+    return response;
+  } catch (error) {
+    console.error('getVendorDriverById: Unexpected error:', error);
+    return {
+      success: false,
+      error: 'Failed to fetch driver details. Please try again.'
     };
   }
 }
@@ -90,7 +121,7 @@ export async function getAllDrivers(): Promise<ApiResponse<Driver[]>> {
       };
     }
 
-    const response = await ApiHandler.authGet<Driver[]>('api/drivers');
+    const response = await authAPIGet<Driver[]>('api/drivers');
     return response;
   } catch (error) {
     console.error('getAllDrivers: Unexpected error:', error);
@@ -114,7 +145,7 @@ export async function getDriverById(id: string): Promise<ApiResponse<Driver>> {
       };
     }
 
-    const response = await ApiHandler.authGet<Driver>(`api/drivers/${id}`);
+    const response = await authAPIGet<Driver>(`api/drivers/${id}`);
     return response;
   } catch (error) {
     console.error('getDriverById: Unexpected error:', error);
@@ -145,7 +176,7 @@ export async function addDriver(driverData: Partial<Driver>): Promise<ApiRespons
       };
     }
 
-    const response = await ApiHandler.authPost<Driver>('api/drivers', driverData);
+    const response = await authAPIPost<Driver>('api/drivers', driverData);
 
     return response;
   } catch (error) {
@@ -177,7 +208,7 @@ export async function updateDriver(id: string, driverData: Partial<Driver>): Pro
       };
     }
 
-    const response = await ApiHandler.authPut<Driver>(`api/drivers/${id}`, driverData);
+    const response = await authAPIPut<Driver>(`api/drivers/${id}`, driverData);
 
     return response;
   } catch (error) {
@@ -209,7 +240,7 @@ export async function deleteDriver(id: string): Promise<ApiResponse<{ message: s
       };
     }
 
-    const response = await ApiHandler.authDelete<{ message: string }>(`api/drivers/${id}`);
+    const response = await authAPIDelete<{ message: string }>(`api/drivers/${id}`);
 
     return response;
   } catch (error) {
@@ -241,7 +272,7 @@ export async function assignTruckToDriver(driverId: string, truckId: string): Pr
       };
     }
 
-    const response = await ApiHandler.authPut<Driver>(`api/drivers/${driverId}/assign-truck`, {
+    const response = await authAPIPut<Driver>(`api/drivers/${driverId}/assign-truck`, {
       truck_id: truckId
     });
 
@@ -275,7 +306,7 @@ export async function unassignTruckFromDriver(driverId: string): Promise<ApiResp
       };
     }
 
-    const response = await ApiHandler.authPut<Driver>(`api/drivers/${driverId}/unassign-truck`, {});
+    const response = await authAPIPut<Driver>(`api/drivers/${driverId}/unassign-truck`, {});
 
     return response;
   } catch (error) {

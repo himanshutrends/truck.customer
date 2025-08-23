@@ -1,20 +1,20 @@
-import { TrucksResultsClient } from '@/app/components/trucks-results-client';
-import { getTruckTypes } from '@/app/server/actions/trucks';
-import { TruckType } from '@/lib/types';
+import React from 'react';
+import { getTruckTypes } from './server/actions/home';
 import { AuthManager } from '@/lib/auth-manager';
+import { HomePageClient } from '@/app/components/home-page-client';
 
+// Server component for initial data fetching
 export default async function HomePage() {
-  // Get current user for authentication status
-  const currentUser = await AuthManager.getCurrentUser();
-  
-  // Get truck types for the search form
-  let truckTypes: TruckType[] = [];
-  try {
-    truckTypes = await getTruckTypes();
-  } catch (error) {
-    console.error('Failed to fetch truck types:', error);
-  }
+  // Get initial data
+  const [truckTypes, currentUser] = await Promise.all([
+    getTruckTypes(),
+    AuthManager.getCurrentUser(),
+  ]);
 
-  // Don't fetch trucks initially - wait for user to provide required parameters
-  return <TrucksResultsClient initialVehicles={[]} truckTypes={truckTypes} initialUser={currentUser} />;
+  return (
+    <HomePageClient 
+      initialTruckTypes={truckTypes} 
+      initialUser={currentUser} 
+    />
+  );
 }

@@ -1,40 +1,9 @@
-'use server';
-
 import { AuthManager } from '@/lib/auth-manager';
-import { ApiHandler } from '@/lib/api';
-import { ApiResponse } from '@/lib/types';
-
-export interface VehicleType {
-  created_at: string;
-  id: number;
-  description: string;
-  name: string;
-}
-
-export interface Vehicle {
-  id: string;
-  truck_type: VehicleType;
-  registration_number: string;
-  capacity: string;
-  make: string;
-  model: string;
-  year: string;
-  color: string;
-  availability_status: string;
-  base_price_per_km: string;
-  current_location_latitude: string;
-  current_location_longitude: string;
-  current_location_address: string;
-  vendor_name: string;
-  vendor_phone: string;
-  images: string[];
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { authAPIGet, authAPIPost, authAPIPut, authAPIDelete } from '@/lib/api';
+import { ApiResponse, Vehicle, VehicleType } from '@/lib/types';
 
 /**
- * Get vendor's trucks from the API
+ * Get vendor's trucks from the API (all trucks)
  */
 export async function getVendorTrucks(): Promise<ApiResponse<Vehicle[]>> {
   try {
@@ -59,10 +28,8 @@ export async function getVendorTrucks(): Promise<ApiResponse<Vehicle[]>> {
       };
     }
 
-    console.log(`getVendorTrucks: Making API request for user ${user.email}`);
-
-    // Make API call using ApiHandler
-    const response = await ApiHandler.authGet<Vehicle[]>('api/trucks/vendor/my-trucks');
+    // Make API call using authAPIGet
+    const response = await authAPIGet<Vehicle[]>('api/trucks/vendor/my-trucks');
 
     console.log("getVendorTrucks: Request completed", response.success ? 'successfully' : 'with error');
     return response;
@@ -71,6 +38,46 @@ export async function getVendorTrucks(): Promise<ApiResponse<Vehicle[]>> {
     return {
       success: false,
       error: 'Failed to fetch vehicles. Please try again.'
+    };
+  }
+}
+
+/**
+ * Get a specific vendor truck by ID
+ */
+export async function getVendorTruckById(id: string): Promise<ApiResponse<Vehicle>> {
+  try {
+    console.log("=== getVendorTruckById: Starting ===");
+
+    // Check if user is authenticated
+    const user = await AuthManager.getCurrentUser();
+    if (!user) {
+      console.log("getVendorTruckById: No user found");
+      return {
+        success: false,
+        error: 'User not authenticated'
+      };
+    }
+
+    // Check if user is a vendor
+    if (user.role !== 'vendor') {
+      console.log(`getVendorTruckById: User role ${user.role} not allowed`);
+      return {
+        success: false,
+        error: 'Access denied. Only vendors can view their trucks.'
+      };
+    }
+
+    // Make API call using authAPIGet
+    const response = await authAPIGet<Vehicle>(`api/trucks/vendor/my-trucks/${id}`);
+
+    console.log("getVendorTruckById: Request completed", response.success ? 'successfully' : 'with error');
+    return response;
+  } catch (error) {
+    console.error('getVendorTruckById: Unexpected error:', error);
+    return {
+      success: false,
+      error: 'Failed to fetch vehicle details. Please try again.'
     };
   }
 }
@@ -95,7 +102,7 @@ export async function getAllVehicles(): Promise<ApiResponse<Vehicle[]>> {
       };
     }
 
-    const response = await ApiHandler.authGet<Vehicle[]>('api/trucks');
+    const response = await authAPIGet<Vehicle[]>('api/trucks/');
     return response;
   } catch (error) {
     console.error('getAllVehicles: Unexpected error:', error);
@@ -119,7 +126,7 @@ export async function getVehicleById(id: string): Promise<ApiResponse<Vehicle>> 
       };
     }
 
-    const response = await ApiHandler.authGet<Vehicle>(`api/trucks/${id}`);
+    const response = await authAPIGet<Vehicle>(`api/trucks/${id}`);
     return response;
   } catch (error) {
     console.error('getVehicleById: Unexpected error:', error);
@@ -150,7 +157,7 @@ export async function addVehicle(vehicleData: Partial<Vehicle>): Promise<ApiResp
       };
     }
 
-    const response = await ApiHandler.authPost<Vehicle>('api/trucks', vehicleData);
+    const response = await authAPIPost<Vehicle>('api/trucks', vehicleData);
 
     return response;
   } catch (error) {
@@ -182,7 +189,7 @@ export async function updateVehicle(id: string, vehicleData: Partial<Vehicle>): 
       };
     }
 
-    const response = await ApiHandler.authPut<Vehicle>(`api/trucks/${id}`, vehicleData);
+    const response = await authAPIPut<Vehicle>(`api/trucks/${id}`, vehicleData);
 
     return response;
   } catch (error) {
@@ -214,7 +221,7 @@ export async function deleteVehicle(id: string): Promise<ApiResponse<{ message: 
       };
     }
 
-    const response = await ApiHandler.authDelete<{ message: string }>(`api/trucks/${id}`);
+    const response = await authAPIDelete<{ message: string }>(`api/trucks/${id}`);
 
     return response;
   } catch (error) {

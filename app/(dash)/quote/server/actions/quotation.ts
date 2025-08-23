@@ -3,74 +3,7 @@
 import { AuthManager } from '@/lib/auth-manager';
 import { authAPIGet, authAPIPut, authAPIPost } from '@/lib/api';
 import { ApiResponse } from '@/lib/types';
-
-export interface QuotationItem {
-  id: string;
-  vehicle_id: string;
-  vehicle_details?: {
-    registration_number: string;
-    truck_type: string;
-    capacity: string;
-    make: string;
-    model: string;
-  };
-  quantity: number;
-  unit_price: string;
-  total_price: string;
-}
-
-export interface Negotiation {
-  id: string;
-  quotation: string;
-  initiated_by: 'customer' | 'vendor';
-  proposed_amount: string;
-  message: string;
-  proposed_base_price?: string;
-  proposed_fuel_charges?: string;
-  proposed_toll_charges?: string;
-  proposed_loading_charges?: string;
-  proposed_unloading_charges?: string;
-  proposed_additional_charges?: string;
-  created_at: string;
-}
-
-export interface NegotiationHistory {
-  quotation: {
-    id: string;
-    original_amount: string;
-    current_negotiated_amount: string;
-    status: string;
-    vendor_name: string;
-    can_negotiate: boolean;
-  };
-  negotiations: Negotiation[];
-  total_negotiations: number;
-  latest_negotiation: Negotiation | null;
-  next_negotiator: 'customer' | 'vendor';
-}
-
-export interface Quotation {
-  id: string;
-  quotation_request_id: string;
-  vendor: string;
-  vendor_name: string;
-  items: QuotationItem[];
-  total_amount: string;
-  terms_and_conditions: string;
-  validity_hours: number;
-  customer_suggested_price?: string;
-  vendor_response_to_suggestion?: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'expired' | 'draft' | 'negotiating' | 'sent';
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  // Negotiation-related fields
-  current_negotiated_amount?: string;
-  total_negotiations?: number;
-  can_negotiate?: boolean;
-  next_negotiator?: 'customer' | 'vendor';
-}
-
+import { Quotation, Negotiation } from '@/lib/types';
 /**
  * Get quotations based on user role
  * Customers see quotations they received
@@ -195,36 +128,6 @@ export async function updateQuotationStatus(
   }
 }
 
-/**
- * Get negotiation history for a quotation
- */
-export async function getNegotiationHistory(quotationId: string): Promise<ApiResponse<NegotiationHistory>> {
-  try {
-    const user = await AuthManager.getCurrentUser();
-    if (!user) {
-      return {
-        success: false,
-        error: 'User not authenticated'
-      };
-    }
-
-    if (!['admin', 'manager', 'customer', 'vendor'].includes(user.role)) {
-      return {
-        success: false,
-        error: 'Insufficient permissions'
-      };
-    }
-
-    const response = await authAPIGet<NegotiationHistory>(`api/quotations/${quotationId}/negotiations/`);
-    return response;
-  } catch (error) {
-    console.error('getNegotiationHistory error:', error);
-    return {
-      success: false,
-      error: 'Failed to fetch negotiation history'
-    };
-  }
-}
 
 /**
  * Create a new negotiation offer

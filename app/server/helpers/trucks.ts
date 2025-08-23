@@ -21,6 +21,8 @@ export function transformTruckResultsToVehicleDetails(
         const basePricePerKm = parseFloat(truck.base_price_per_km) || 0;
         const estimatedDistance = searchCriteria.total_distance_km || 500; // Use actual distance from API
         const totalPrice = basePricePerKm * estimatedDistance;
+        const capacity = parseFloat(truck.capacity) || 0; // Convert capacity to number
+        const weightAmount = searchCriteria.weight_tons; // Use search weight
 
         // Generate estimated delivery date (pickup date + 1-3 days based on urgency)
         const deliveryDate = new Date(searchParams.dropDate);
@@ -36,7 +38,7 @@ export function transformTruckResultsToVehicleDetails(
             badge: generateBadge(truck, index),
             price: `₹${totalPrice.toLocaleString()}`,
             vehicleType: truck.truck_type,
-            maxWeight: truck.capacity,
+            maxWeight: capacity, // Now a number
             model: `${truck.make} ${truck.model}`,
             gpsNumber: truck.registration_number,
             estimatedDelivery: deliveryDate.toLocaleDateString('en-IN', {
@@ -50,16 +52,16 @@ export function transformTruckResultsToVehicleDetails(
                 price: `₹${(totalPrice * 0.6).toLocaleString()}` // Base route price
             },
             weight: {
-                amount: truck.capacity,
-                rate: `₹${basePricePerKm} x ${Math.round(estimatedDistance)}km`,
-                total: `₹${(totalPrice * 0.8).toLocaleString()}`
+                amount: weightAmount, // Weight amount from search criteria
+                rate: Math.round(basePricePerKm * 100) / 100, // Rate rounded to 2 decimal places
+                total: Math.round(totalPrice * 0.8 * 100) / 100 // Total rounded to 2 decimal places
             },
             deliveryType: {
                 type: searchParams.urgencyLevel === 'urgent' ? 'Express' :
                     searchParams.urgencyLevel === 'express' ? 'Standard' : 'Economy',
-                price: `₹${(totalPrice * 0.1).toLocaleString()}`
+                price: Math.round(totalPrice * 0.1 * 100) / 100 // Price rounded to 2 decimal places
             },
-            total: `₹${totalPrice.toLocaleString()}`,
+            total: Math.round(totalPrice * 100) / 100, // Total rounded to 2 decimal places
             specs: {
                 loadCapacity: truck.capacity,
                 dimensions: '20 x 8 x 8 ft', // Default dimensions - you might want to add this to API
@@ -84,11 +86,10 @@ export function transformTruckResultsToVehicleDetails(
 }
 
 /**
- * Extract numeric weight value from weight string
+ * Extract numeric weight value from weight and unit
  */
-export function extractWeightNumber(weight: string, unit: 'kg' | 'tonnes'): number {
-    const numericValue = parseFloat(weight.replace(/[^\d.]/g, '')) || 0;
-    return unit === 'kg' ? numericValue / 1000 : numericValue; // Convert to tonnes
+export function extractWeightNumber(weight: number, unit: 'kg' | 'tonnes'): number {
+    return unit === 'kg' ? weight / 1000 : weight; // Convert to tonnes
 }
 
 /**

@@ -1,235 +1,235 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { DualRangeSlider } from '@/components/ui/dual-range-slider';
-import { ChevronDown, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { TruckType } from '@/lib/types';
 
-export const FiltersPanel: React.FC<{ truckTypes: TruckType[] }> = ({ truckTypes }) => {
-  const [selectedVehicles, setSelectedVehicles] = useState(['ashok-leyland']);
-  const [priceRange, setPriceRange] = useState([0, 28000]);
-  const [fromPrice, setFromPrice] = useState('₹0');
-  const [toPrice, setToPrice] = useState('₹28,000');
-  const [dimensions, setDimensions] = useState('22 | 45 | 21');
-  const [numberOfBoxes, setNumberOfBoxes] = useState('34');
-  
-  // Collapsible states
-  const [isVehicleTypesOpen, setIsVehicleTypesOpen] = useState(true);
-  const [isPriceRangeOpen, setIsPriceRangeOpen] = useState(true);
-  const [isLoadCapacityOpen, setIsLoadCapacityOpen] = useState(true);
+interface FiltersPanelProps {
+  truckTypes: TruckType[];
+}
 
-  const vehicleTypes = truckTypes.map(type => ({
-    id: type.id,
-    label: type.name
-  }));
+export function FiltersPanel({ truckTypes }: FiltersPanelProps) {
+  const [vehicleTypesExpanded, setVehicleTypesExpanded] = useState(true);
+  const [priceRangeExpanded, setPriceRangeExpanded] = useState(true);
+  const [loadCapacityExpanded, setLoadCapacityExpanded] = useState(true);
+  const [materialTypeExpanded, setMaterialTypeExpanded] = useState(true);
 
-  const handleVehicleChange = (vehicleId: string, checked: boolean) => {
-    setSelectedVehicles(prev => 
-      checked 
-        ? [...prev, vehicleId]
-        : prev.filter(id => id !== vehicleId)
-    );
+  // Filter states
+  const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState([0, 100000]);
+  const [loadCapacity, setLoadCapacity] = useState('');
+  const [numberOfBoxes, setNumberOfBoxes] = useState(3);
+  const [selectedMaterialTypes, setSelectedMaterialTypes] = useState<string[]>([]);
+
+  const handleVehicleTypeChange = (typeId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedVehicleTypes([...selectedVehicleTypes, typeId]);
+    } else {
+      setSelectedVehicleTypes(selectedVehicleTypes.filter(id => id !== typeId));
+    }
   };
 
-  const handlePriceRangeChange = (values: number[]) => {
-    setPriceRange(values);
-    setFromPrice(`₹${values[0].toLocaleString()}`);
-    setToPrice(`₹${values[1].toLocaleString()}`);
+  const handleMaterialTypeChange = (materialType: string, checked: boolean) => {
+    if (checked) {
+      setSelectedMaterialTypes([...selectedMaterialTypes, materialType]);
+    } else {
+      setSelectedMaterialTypes(selectedMaterialTypes.filter(type => type !== materialType));
+    }
   };
+
+  const vehicleTypeOptions = [
+    { id: 'tata-ace', name: 'TATA Ace' },
+    { id: 'tata-407', name: 'Tata 407' },
+    { id: 'volvo-s440', name: 'Volvo S440' },
+    { id: 'mahindra-evo', name: 'Mahindra EVO' },
+    { id: 'bharti-leyland', name: 'Bharti Leyland' },
+  ];
+
+  const materialTypes = [
+    'This shipment contains hazardous materials'
+  ];
 
   return (
-    <TooltipProvider>
-      <div className="w-64 space-y-4">
-        {/* Filters Header */}
-        <div>
-          <h2 className="text-lg font-bold text-black">Filters</h2>
+    <div className="w-full lg:w-72 space-y-4">
+      <Card className="p-4">
+        <h2 className="font-semibold text-lg mb-4">Filters</h2>
+
+        {/* Vehicle Types */}
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => setVehicleTypesExpanded(!vehicleTypesExpanded)}
+            className="w-full justify-between p-0 h-auto font-medium text-left"
+          >
+            VEHICLE TYPES
+            {vehicleTypesExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
+          
+          {vehicleTypesExpanded && (
+            <div className="mt-3 space-y-2">
+              {vehicleTypeOptions.map((type) => (
+                <div key={type.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={type.id}
+                    checked={selectedVehicleTypes.includes(type.id)}
+                    onCheckedChange={(checked) => handleVehicleTypeChange(type.id, checked === true)}
+                  />
+                  <Label htmlFor={type.id} className="text-sm font-normal">
+                    {type.name}
+                  </Label>
+                </div>
+              ))}
+              <Button variant="link" className="p-0 h-auto text-sm text-blue-600">
+                Show More...
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Vehicle Types Section */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-neutral-900">VEHICLE TYPES</h3>
-            <button
-              onClick={() => setIsVehicleTypesOpen(!isVehicleTypesOpen)}
-              className="p-1"
-            >
-              <ChevronDown 
-                className={`h-4 w-4 transition-transform ${
-                  isVehicleTypesOpen ? 'rotate-180' : ''
-                }`} 
-              />
-            </button>
-          </div>
+        {/* Price Range */}
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => setPriceRangeExpanded(!priceRangeExpanded)}
+            className="w-full justify-between p-0 h-auto font-medium text-left"
+          >
+            PRICE RANGE
+            {priceRangeExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
           
-          {isVehicleTypesOpen && (
-            <div className="space-y-3">
-              {vehicleTypes.map((vehicle) => (
-                <div key={vehicle.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={vehicle.id}
-                    checked={selectedVehicles.includes(vehicle.id)}
-                    onCheckedChange={(checked) => handleVehicleChange(vehicle.id, checked as boolean)}
+          {priceRangeExpanded && (
+            <div className="mt-3 space-y-4">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs text-gray-600">From</Label>
+                  <Input
+                    type="number"
+                    value={priceRange[0]}
+                    onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                    className="h-8 text-sm"
                   />
-                  <label
-                    htmlFor={vehicle.id}
-                    className="text-sm font-medium text-neutral-900 cursor-pointer"
-                  >
-                    {vehicle.label}
-                  </label>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-600">To</Label>
+                  <Input
+                    type="number"
+                    value={priceRange[1]}
+                    onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+              
+              <div className="px-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="100000"
+                  step="1000"
+                  value={priceRange[1]}
+                  onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+              
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>₹{priceRange[0].toLocaleString()}</span>
+                <span>₹{priceRange[1].toLocaleString()}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Load Capacity */}
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => setLoadCapacityExpanded(!loadCapacityExpanded)}
+            className="w-full justify-between p-0 h-auto font-medium text-left"
+          >
+            LOAD CAPACITY
+            {loadCapacityExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
+          
+          {loadCapacityExpanded && (
+            <div className="mt-3 space-y-4">
+              <div>
+                <Label className="text-xs text-gray-600">Dimensions</Label>
+                <Select value={loadCapacity} onValueChange={setLoadCapacity}>
+                  <SelectTrigger className="h-8">
+                    <SelectValue placeholder="Select dimensions" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="22-46-12">22 | 46 | 12 | cm</SelectItem>
+                    <SelectItem value="24-48-14">24 | 48 | 14 | cm</SelectItem>
+                    <SelectItem value="26-50-16">26 | 50 | 16 | cm</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label className="text-xs text-gray-600 mb-2 block">Number of boxes</Label>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="number"
+                    value={numberOfBoxes}
+                    onChange={(e) => setNumberOfBoxes(Number(e.target.value))}
+                    className="h-8 w-16"
+                    min="1"
+                  />
+                  <div className="flex-1">
+                    <input
+                      type="range"
+                      min="1"
+                      max="20"
+                      step="1"
+                      value={numberOfBoxes}
+                      onChange={(e) => setNumberOfBoxes(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                  <span className="text-sm text-gray-500">{numberOfBoxes}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Material Type */}
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => setMaterialTypeExpanded(!materialTypeExpanded)}
+            className="w-full justify-between p-0 h-auto font-medium text-left"
+          >
+            MATERIAL TYPE
+            {materialTypeExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
+          
+          {materialTypeExpanded && (
+            <div className="mt-3 space-y-2">
+              {materialTypes.map((material) => (
+                <div key={material} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={material}
+                    checked={selectedMaterialTypes.includes(material)}
+                    onCheckedChange={(checked) => handleMaterialTypeChange(material, checked === true)}
+                  />
+                  <Label htmlFor={material} className="text-sm font-normal">
+                    {material}
+                  </Label>
                 </div>
               ))}
             </div>
           )}
         </div>
-
-        <Separator />
-
-        {/* Price Range Section */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-neutral-900">PRICE RANGE</h3>
-            <button
-              onClick={() => setIsPriceRangeOpen(!isPriceRangeOpen)}
-              className="p-1"
-            >
-              <ChevronDown 
-                className={`h-4 w-4 transition-transform ${
-                  isPriceRangeOpen ? 'rotate-180' : ''
-                }`} 
-              />
-            </button>
-          </div>
-          
-          {isPriceRangeOpen && (
-            <div className="space-y-3">
-              {/* From Input */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-neutral-900">From</label>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-neutral-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Minimum price for your shipment</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <Input 
-                  value={fromPrice} 
-                  onChange={(e) => setFromPrice(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              
-              {/* To Input */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-neutral-900">To</label>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-neutral-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Maximum price for your shipment</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <Input 
-                  value={toPrice} 
-                  onChange={(e) => setToPrice(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              
-              {/* Price Range Slider */}
-              <div className="mt-8">
-                <DualRangeSlider
-                  label={(value) => `₹${value?.toLocaleString() || '0'}`}
-                  value={priceRange}
-                  onValueChange={handlePriceRangeChange}
-                  min={0}
-                  max={200000}
-                  step={1000}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <Separator />
-
-        {/* Load Capacity Section */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-neutral-900">LOAD CAPACITY</h3>
-            <button
-              onClick={() => setIsLoadCapacityOpen(!isLoadCapacityOpen)}
-              className="p-1"
-            >
-              <ChevronDown 
-                className={`h-4 w-4 transition-transform ${
-                  isLoadCapacityOpen ? 'rotate-180' : ''
-                }`} 
-              />
-            </button>
-          </div>
-          
-          {isLoadCapacityOpen && (
-            <div className="space-y-3">
-              {/* Dimensions Input */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-neutral-900">Dimensions</label>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-neutral-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Length | Width | Height in centimeters</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <div className="flex">
-                  <Input 
-                    value={dimensions}
-                    onChange={(e) => setDimensions(e.target.value)}
-                    className="rounded-r-none border-r-0"
-                  />
-                  <div className="bg-blue-50 px-4 py-2 border border-l-0 rounded-r-md flex items-center">
-                    <span className="text-sm text-neutral-900">cm</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Number of Boxes Input */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-neutral-900">Number of boxes</label>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-neutral-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Total number of boxes in your shipment</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <Input 
-                  value={numberOfBoxes}
-                  onChange={(e) => setNumberOfBoxes(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </TooltipProvider>
+      </Card>
+    </div>
   );
-};
+}

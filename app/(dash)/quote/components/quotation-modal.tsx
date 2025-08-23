@@ -1,13 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
+import { useState, useEffect, useCallback } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   IconTruck,
   IconCurrencyRupee,
   IconBuilding,
@@ -17,19 +29,18 @@ import {
   IconLoader2,
   IconX,
   IconCheck,
-  IconUsers
-} from '@tabler/icons-react';
-import { formatDistanceToNow, format } from 'date-fns';
-import { toast } from 'sonner';
-import { 
-  Quotation,
-  NegotiationHistory,
-  getNegotiationHistory,
+  IconUsers,
+} from "@tabler/icons-react";
+import { formatDistanceToNow, format } from "date-fns";
+import { toast } from "sonner";
+import {
   acceptQuotation,
   rejectQuotation,
   createNegotiation,
-  acceptNegotiation
-} from '../server/actions/quotation';
+  acceptNegotiation,
+} from "../server/actions/quotation";
+
+import { Quotation } from "@/lib/types";
 
 interface QuotationModalProps {
   quotation: Quotation;
@@ -39,63 +50,41 @@ interface QuotationModalProps {
   onQuotationUpdated: () => void;
 }
 
-export function QuotationModal({ 
-  quotation, 
-  userRole, 
-  open, 
+export function QuotationModal({
+  quotation,
+  userRole,
+  open,
   onOpenChange,
-  onQuotationUpdated
+  onQuotationUpdated,
 }: QuotationModalProps) {
-  const [negotiationHistory, setNegotiationHistory] = useState<NegotiationHistory | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('details');
+  const [activeTab, setActiveTab] = useState("details");
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [negotiationForm, setNegotiationForm] = useState({
-    amount: '',
-    message: '',
+    amount: "",
+    message: "",
     showBreakdown: false,
-    basePrice: '',
-    fuelCharges: '',
-    tollCharges: '',
-    loadingCharges: '',
-    unloadingCharges: '',
-    additionalCharges: ''
+    basePrice: "",
+    fuelCharges: "",
+    tollCharges: "",
+    loadingCharges: "",
+    unloadingCharges: "",
+    additionalCharges: "",
   });
-
-  const loadNegotiationHistory = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await getNegotiationHistory(quotation.id);
-      if (response.success && response.data) {
-        setNegotiationHistory(response.data);
-      }
-    } catch {
-      console.error('Failed to load negotiation history');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [quotation.id]);
-
-  useEffect(() => {
-    if (open) {
-      loadNegotiationHistory();
-    }
-  }, [open, loadNegotiationHistory]);
 
   const handleAcceptQuotation = async () => {
     if (isActionLoading) return;
-    
+
     setIsActionLoading(true);
     try {
       const response = await acceptQuotation(quotation.id);
       if (response.success) {
-        toast.success('Quotation accepted successfully!');
+        toast.success("Quotation accepted successfully!");
         onQuotationUpdated();
       } else {
-        toast.error(response.error || 'Failed to accept quotation');
+        toast.error(response.error || "Failed to accept quotation");
       }
     } catch {
-      toast.error('Failed to accept quotation');
+      toast.error("Failed to accept quotation");
     } finally {
       setIsActionLoading(false);
     }
@@ -103,39 +92,51 @@ export function QuotationModal({
 
   const handleRejectQuotation = async () => {
     if (isActionLoading) return;
-    
+
     setIsActionLoading(true);
     try {
       const response = await rejectQuotation(quotation.id);
       if (response.success) {
-        toast.success('Quotation rejected');
+        toast.success("Quotation rejected");
         onQuotationUpdated();
       } else {
-        toast.error(response.error || 'Failed to reject quotation');
+        toast.error(response.error || "Failed to reject quotation");
       }
     } catch {
-      toast.error('Failed to reject quotation');
+      toast.error("Failed to reject quotation");
     } finally {
       setIsActionLoading(false);
     }
   };
 
   const handleCreateNegotiation = async () => {
-    if (isActionLoading || !negotiationForm.amount || !negotiationForm.message) {
-      toast.error('Please fill in all required fields');
+    if (
+      isActionLoading ||
+      !negotiationForm.amount ||
+      !negotiationForm.message
+    ) {
+      toast.error("Please fill in all required fields");
       return;
     }
-    
+
     setIsActionLoading(true);
     try {
-      const breakdown = negotiationForm.showBreakdown ? {
-        proposed_base_price: parseFloat(negotiationForm.basePrice) || undefined,
-        proposed_fuel_charges: parseFloat(negotiationForm.fuelCharges) || undefined,
-        proposed_toll_charges: parseFloat(negotiationForm.tollCharges) || undefined,
-        proposed_loading_charges: parseFloat(negotiationForm.loadingCharges) || undefined,
-        proposed_unloading_charges: parseFloat(negotiationForm.unloadingCharges) || undefined,
-        proposed_additional_charges: parseFloat(negotiationForm.additionalCharges) || undefined,
-      } : undefined;
+      const breakdown = negotiationForm.showBreakdown
+        ? {
+            proposed_base_price:
+              parseFloat(negotiationForm.basePrice) || undefined,
+            proposed_fuel_charges:
+              parseFloat(negotiationForm.fuelCharges) || undefined,
+            proposed_toll_charges:
+              parseFloat(negotiationForm.tollCharges) || undefined,
+            proposed_loading_charges:
+              parseFloat(negotiationForm.loadingCharges) || undefined,
+            proposed_unloading_charges:
+              parseFloat(negotiationForm.unloadingCharges) || undefined,
+            proposed_additional_charges:
+              parseFloat(negotiationForm.additionalCharges) || undefined,
+          }
+        : undefined;
 
       const response = await createNegotiation(
         quotation.id,
@@ -145,24 +146,23 @@ export function QuotationModal({
       );
 
       if (response.success) {
-        toast.success('Negotiation offer created successfully!');
+        toast.success("Negotiation offer created successfully!");
         setNegotiationForm({
-          amount: '',
-          message: '',
+          amount: "",
+          message: "",
           showBreakdown: false,
-          basePrice: '',
-          fuelCharges: '',
-          tollCharges: '',
-          loadingCharges: '',
-          unloadingCharges: '',
-          additionalCharges: ''
+          basePrice: "",
+          fuelCharges: "",
+          tollCharges: "",
+          loadingCharges: "",
+          unloadingCharges: "",
+          additionalCharges: "",
         });
-        loadNegotiationHistory();
       } else {
-        toast.error(response.error || 'Failed to create negotiation');
+        toast.error(response.error || "Failed to create negotiation");
       }
     } catch {
-      toast.error('Failed to create negotiation');
+      toast.error("Failed to create negotiation");
     } finally {
       setIsActionLoading(false);
     }
@@ -170,18 +170,18 @@ export function QuotationModal({
 
   const handleAcceptNegotiation = async (negotiationId: string) => {
     if (isActionLoading) return;
-    
+
     setIsActionLoading(true);
     try {
       const response = await acceptNegotiation(negotiationId);
       if (response.success) {
-        toast.success('Negotiation accepted successfully!');
+        toast.success("Negotiation accepted successfully!");
         onQuotationUpdated();
       } else {
-        toast.error(response.error || 'Failed to accept negotiation');
+        toast.error(response.error || "Failed to accept negotiation");
       }
     } catch {
-      toast.error('Failed to accept negotiation');
+      toast.error("Failed to accept negotiation");
     } finally {
       setIsActionLoading(false);
     }
@@ -189,50 +189,63 @@ export function QuotationModal({
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'accepted': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'negotiating': return 'bg-blue-100 text-blue-800';
-      case 'expired': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "accepted":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "negotiating":
+        return "bg-blue-100 text-blue-800";
+      case "expired":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const canTakeAction = () => {
-    // Only customers can take action on quotations
-    if (userRole !== 'customer') return false;
-    
     // Can't take action on completed quotations
-    if (['accepted', 'rejected', 'expired'].includes(quotation.status)) return false;
-    
-    // If there are negotiations, check if it's the customer's turn
-    if (negotiationHistory && negotiationHistory.negotiations && negotiationHistory.negotiations.length > 0) {
-      return negotiationHistory.next_negotiator === 'customer';
-    }
-    
-    // If no negotiations yet, customer can take action on pending quotations
-    return quotation.status === 'pending';
-  };
+    if (["accepted", "rejected", "expired"].includes(quotation.status))
+      return false;
 
-  const canNegotiate = () => {
-    if (!canTakeAction()) return false;
-    
-    // Can negotiate if it's pending or negotiating status
-    if (!['pending', 'negotiating'].includes(quotation.status)) return false;
-    
+    console.log("User role:", userRole);
     // If there are negotiations, check if it's the customer's turn
-    if (negotiationHistory && negotiationHistory.negotiations && negotiationHistory.negotiations.length > 0) {
-      return negotiationHistory.next_negotiator === 'customer';
+    if (quotation.negotiations && quotation.negotiations.length > 0) {
+      if (
+        userRole === "customer" &&
+        quotation.negotiations[quotation.negotiations.length - 1]
+          .initiated_by === "customer"
+      ) {
+        return false;
+      }
+      if (
+        userRole === "vendor" &&
+        quotation.negotiations[quotation.negotiations.length - 1]
+          .initiated_by === "vendor"
+      ) {
+        return false;
+      }
     }
-    
-    // If no negotiations yet, customer can start negotiating
-    return true;
+
+    console.log("User role:", userRole);
+    console.log("Quotation status:", quotation.status);
+    console.log(
+      "Negotiations:",
+      quotation.negotiations[quotation.negotiations.length - 1]
+    );
+
+    // If no negotiations yet, customer can take action on pending quotations
+    return ["pending", "negotiating"].includes(quotation.status);
   };
 
   const isWaitingForVendor = () => {
-    if (userRole !== 'customer') return false;
-    if (negotiationHistory && negotiationHistory.negotiations && negotiationHistory.negotiations.length > 0) {
-      return negotiationHistory.next_negotiator === 'vendor';
+    if (userRole !== "customer") return false;
+    if (quotation.negotiations && quotation.negotiations.length > 0) {
+      return (
+        quotation.negotiations[quotation.negotiations.length - 1]
+          .initiated_by === "vendor"
+      );
     }
     return false;
   };
@@ -253,7 +266,9 @@ export function QuotationModal({
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
-            <TabsTrigger value="negotiate" disabled={!canNegotiate()}>Negotiate</TabsTrigger>
+            <TabsTrigger value="negotiate" disabled={!canTakeAction()}>
+              Negotiate
+            </TabsTrigger>
             <TabsTrigger value="actions">Actions</TabsTrigger>
           </TabsList>
 
@@ -268,10 +283,20 @@ export function QuotationModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <div><strong>Vendor:</strong> {quotation.vendor_name}</div>
-                  <div><strong>Request ID:</strong> #{quotation.quotation_request_id}</div>
-                  <div><strong>Validity:</strong> {quotation.validity_hours} hours</div>
-                  <div><strong>Created:</strong> {format(new Date(quotation.created_at), 'PPp')}</div>
+                  <div>
+                    <strong>Vendor:</strong> {quotation.vendor_name}
+                  </div>
+                  <div>
+                    <strong>Request ID:</strong> #
+                    {quotation.quotation_request_id}
+                  </div>
+                  <div>
+                    <strong>Validity:</strong> {quotation.validity_hours} hours
+                  </div>
+                  <div>
+                    <strong>Created:</strong>{" "}
+                    {format(new Date(quotation.created_at), "PPp")}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -287,11 +312,6 @@ export function QuotationModal({
                   <div className="text-2xl font-bold">
                     ₹{parseFloat(quotation.total_amount).toLocaleString()}
                   </div>
-                  {quotation.current_negotiated_amount && (
-                    <div className="text-sm text-muted-foreground">
-                      Negotiated from: ₹{parseFloat(quotation.current_negotiated_amount).toLocaleString()}
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 
@@ -320,10 +340,12 @@ export function QuotationModal({
                             {item.vehicle_details ? (
                               <div>
                                 <div className="font-medium">
-                                  {item.vehicle_details.make} {item.vehicle_details.model}
+                                  {item.vehicle_details.make}{" "}
+                                  {item.vehicle_details.model}
                                 </div>
                                 <div className="text-sm text-muted-foreground">
-                                  {item.vehicle_details.registration_number} • {item.vehicle_details.truck_type}
+                                  {item.vehicle_details.registration_number} •{" "}
+                                  {item.vehicle_details.truck_type}
                                 </div>
                               </div>
                             ) : (
@@ -331,8 +353,12 @@ export function QuotationModal({
                             )}
                           </TableCell>
                           <TableCell>{item.quantity}</TableCell>
-                          <TableCell>₹{parseFloat(item.unit_price).toLocaleString()}</TableCell>
-                          <TableCell>₹{parseFloat(item.total_price).toLocaleString()}</TableCell>
+                          <TableCell>
+                            ₹{parseFloat(item.unit_price).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            ₹{parseFloat(item.total_price).toLocaleString()}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -350,52 +376,70 @@ export function QuotationModal({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="whitespace-pre-wrap">{quotation.terms_and_conditions}</p>
+                    <p className="whitespace-pre-wrap">
+                      {quotation.terms_and_conditions}
+                    </p>
                   </CardContent>
                 </Card>
               )}
             </TabsContent>
 
             <TabsContent value="history" className="space-y-4">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <IconLoader2 className="h-6 w-6 animate-spin" />
-                </div>
-              ) : negotiationHistory?.negotiations?.length ? (
+              {quotation.negotiations?.length > 0 ? (
                 <div className="space-y-4">
-                  {negotiationHistory.negotiations.map((negotiation, index) => (
+                  {quotation.negotiations.map((negotiation, index) => (
                     <Card key={negotiation.id}>
                       <CardContent className="pt-4">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <Badge variant={negotiation.initiated_by === 'customer' ? 'default' : 'secondary'}>
+                            <Badge
+                              variant={
+                                negotiation.initiated_by === "customer"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                            >
                               {negotiation.initiated_by}
                             </Badge>
                             <span className="ml-2 text-sm text-muted-foreground">
-                              {formatDistanceToNow(new Date(negotiation.created_at))} ago
+                              {formatDistanceToNow(
+                                new Date(negotiation.created_at)
+                              )}{" "}
+                              ago
                             </span>
                           </div>
                           <div className="text-lg font-bold">
-                            ₹{parseFloat(negotiation.proposed_amount).toLocaleString()}
+                            ₹
+                            {parseFloat(
+                              negotiation.proposed_amount
+                            ).toLocaleString()}
                           </div>
                         </div>
                         <p className="text-sm">{negotiation.message}</p>
-                        
+
                         {/* Show accept button for latest negotiation if it's the other party's turn */}
-                        {index === 0 && 
-                         negotiationHistory.next_negotiator === userRole.toLowerCase() && 
-                         negotiation.initiated_by !== userRole.toLowerCase() && (
-                          <div className="mt-4">
-                            <Button 
-                              onClick={() => handleAcceptNegotiation(negotiation.id)}
-                              disabled={isActionLoading}
-                              className="w-full"
-                            >
-                              {isActionLoading ? <IconLoader2 className="h-4 w-4 animate-spin mr-2" /> : <IconCheck className="h-4 w-4 mr-2" />}
-                              Accept This Offer
-                            </Button>
-                          </div>
-                        )}
+                        {/* {index === 0 &&
+                          quotation.next_negotiator ===
+                            userRole.toLowerCase() &&
+                          negotiation.initiated_by !==
+                            userRole.toLowerCase() && (
+                            <div className="mt-4">
+                              <Button
+                                onClick={() =>
+                                  handleAcceptNegotiation(negotiation.id)
+                                }
+                                disabled={isActionLoading}
+                                className="w-full"
+                              >
+                                {isActionLoading ? (
+                                  <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <IconCheck className="h-4 w-4 mr-2" />
+                                )}
+                                Accept This Offer
+                              </Button>
+                            </div>
+                          )} */}
                       </CardContent>
                     </Card>
                   ))}
@@ -404,7 +448,9 @@ export function QuotationModal({
                 <Card className="text-center py-8">
                   <CardContent>
                     <IconHistory className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-muted-foreground">No negotiation history</p>
+                    <p className="text-muted-foreground">
+                      No negotiation history
+                    </p>
                   </CardContent>
                 </Card>
               )}
@@ -420,13 +466,20 @@ export function QuotationModal({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Proposed Amount *</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Proposed Amount *
+                    </label>
                     <div className="relative">
                       <IconCurrencyRupee className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <input
                         type="number"
                         value={negotiationForm.amount}
-                        onChange={(e) => setNegotiationForm(prev => ({ ...prev, amount: e.target.value }))}
+                        onChange={(e) =>
+                          setNegotiationForm((prev) => ({
+                            ...prev,
+                            amount: e.target.value,
+                          }))
+                        }
                         className="w-full pl-10 pr-4 py-2 border rounded-md"
                         placeholder="Enter your proposed amount"
                       />
@@ -434,21 +487,36 @@ export function QuotationModal({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Message *</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Message *
+                    </label>
                     <textarea
                       value={negotiationForm.message}
-                      onChange={(e) => setNegotiationForm(prev => ({ ...prev, message: e.target.value }))}
+                      onChange={(e) =>
+                        setNegotiationForm((prev) => ({
+                          ...prev,
+                          message: e.target.value,
+                        }))
+                      }
                       className="w-full p-3 border rounded-md h-24"
                       placeholder="Explain your counter offer..."
                     />
                   </div>
 
-                  <Button 
+                  <Button
                     onClick={handleCreateNegotiation}
-                    disabled={isActionLoading || !negotiationForm.amount || !negotiationForm.message}
+                    disabled={
+                      isActionLoading ||
+                      !negotiationForm.amount ||
+                      !negotiationForm.message
+                    }
                     className="w-full"
                   >
-                    {isActionLoading ? <IconLoader2 className="h-4 w-4 animate-spin mr-2" /> : <IconMessageCircle className="h-4 w-4 mr-2" />}
+                    {isActionLoading ? (
+                      <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <IconMessageCircle className="h-4 w-4 mr-2" />
+                    )}
                     Send Counter Offer
                   </Button>
                 </CardContent>
@@ -466,31 +534,44 @@ export function QuotationModal({
                       <div className="text-2xl font-bold mb-2">
                         ₹{parseFloat(quotation.total_amount).toLocaleString()}
                       </div>
-                      <p className="text-muted-foreground">Current quotation amount</p>
+                      <p className="text-muted-foreground">
+                        Current quotation amount
+                      </p>
                     </div>
 
-                    <Button 
+                    <Button
                       onClick={handleAcceptQuotation}
                       disabled={isActionLoading}
                       className="w-full bg-green-600 hover:bg-green-700"
                     >
-                      {isActionLoading ? <IconLoader2 className="h-4 w-4 animate-spin mr-2" /> : <IconCheck className="h-4 w-4 mr-2" />}
+                      {isActionLoading ? (
+                        <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <IconCheck className="h-4 w-4 mr-2" />
+                      )}
                       Accept Quotation
                     </Button>
 
-                    <Button 
+                    <Button
                       onClick={handleRejectQuotation}
                       disabled={isActionLoading}
                       variant="destructive"
                       className="w-full"
                     >
-                      {isActionLoading ? <IconLoader2 className="h-4 w-4 animate-spin mr-2" /> : <IconX className="h-4 w-4 mr-2" />}
+                      {isActionLoading ? (
+                        <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <IconX className="h-4 w-4 mr-2" />
+                      )}
                       Reject Quotation
                     </Button>
 
                     <div className="text-xs text-muted-foreground text-center mt-4">
                       <p>• &ldquo;Accept&rdquo; will finalize this quotation</p>
-                      <p>• &ldquo;Reject&rdquo; will decline and end the negotiation</p>
+                      <p>
+                        • &ldquo;Reject&rdquo; will decline and end the
+                        negotiation
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -504,31 +585,42 @@ export function QuotationModal({
                       {isWaitingForVendor() ? (
                         <>
                           <IconLoader2 className="h-12 w-12 mx-auto mb-4 text-blue-500 animate-spin" />
-                          <h3 className="text-lg font-semibold mb-2">Waiting for Vendor Response</h3>
+                          <h3 className="text-lg font-semibold mb-2">
+                            Waiting for Vendor Response
+                          </h3>
                           <p className="text-muted-foreground">
-                            The vendor is reviewing your latest negotiation. You&apos;ll be able to take action once they respond.
+                            The vendor is reviewing your latest negotiation.
+                            You&apos;ll be able to take action once they
+                            respond.
                           </p>
                         </>
-                      ) : quotation.status === 'accepted' ? (
+                      ) : quotation.status === "accepted" ? (
                         <>
                           <IconCheck className="h-12 w-12 mx-auto mb-4 text-green-500" />
-                          <h3 className="text-lg font-semibold mb-2">Quotation Accepted</h3>
+                          <h3 className="text-lg font-semibold mb-2">
+                            Quotation Accepted
+                          </h3>
                           <p className="text-muted-foreground">
                             This quotation has been finalized and accepted.
                           </p>
                         </>
-                      ) : quotation.status === 'rejected' ? (
+                      ) : quotation.status === "rejected" ? (
                         <>
                           <IconX className="h-12 w-12 mx-auto mb-4 text-red-500" />
-                          <h3 className="text-lg font-semibold mb-2">Quotation Rejected</h3>
+                          <h3 className="text-lg font-semibold mb-2">
+                            Quotation Rejected
+                          </h3>
                           <p className="text-muted-foreground">
-                            This quotation has been declined and the negotiation has ended.
+                            This quotation has been declined and the negotiation
+                            has ended.
                           </p>
                         </>
-                      ) : quotation.status === 'expired' ? (
+                      ) : quotation.status === "expired" ? (
                         <>
                           <IconX className="h-12 w-12 mx-auto mb-4 text-gray-500" />
-                          <h3 className="text-lg font-semibold mb-2">Quotation Expired</h3>
+                          <h3 className="text-lg font-semibold mb-2">
+                            Quotation Expired
+                          </h3>
                           <p className="text-muted-foreground">
                             This quotation has expired and is no longer valid.
                           </p>
@@ -536,9 +628,12 @@ export function QuotationModal({
                       ) : (
                         <>
                           <IconLoader2 className="h-12 w-12 mx-auto mb-4 text-gray-500" />
-                          <h3 className="text-lg font-semibold mb-2">No Actions Available</h3>
+                          <h3 className="text-lg font-semibold mb-2">
+                            No Actions Available
+                          </h3>
                           <p className="text-muted-foreground">
-                            You cannot take action on this quotation at this time.
+                            You cannot take action on this quotation at this
+                            time.
                           </p>
                         </>
                       )}

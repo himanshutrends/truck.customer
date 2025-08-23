@@ -31,7 +31,6 @@ export default async function VehiclePage() {
         </div>
       </div>
 
-
       {/* Success case - show data table */}
       {vehiclesResponse.success && vehiclesResponse.data && (
         <VehicleDataTableWrapper 

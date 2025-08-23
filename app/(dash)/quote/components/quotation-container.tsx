@@ -14,7 +14,7 @@ import {
   IconBuilding
 } from '@tabler/icons-react';
 import { formatDistanceToNow } from 'date-fns';
-import { Quotation } from '../server/actions/quotation';
+import { Quotation } from '@/lib/types';
 import { QuotationModal } from './quotation-modal';
 
 interface QuotationContainerProps {
@@ -26,6 +26,8 @@ export function QuotationContainer({ quotations, userRole }: QuotationContainerP
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  console.log("Rendering QuotationContainer with", quotations.length, "quotations", quotations);
 
   const filteredQuotations = quotations.filter(quotation =>
     quotation.vendor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -100,11 +102,11 @@ export function QuotationContainer({ quotations, userRole }: QuotationContainerP
                 <span className="text-lg font-bold">
                   ₹{parseFloat(quotation.total_amount).toLocaleString()}
                 </span>
-                {quotation.current_negotiated_amount && (
+                {/* {quotation.current_negotiated_amount && (
                   <span className="text-sm text-muted-foreground line-through">
                     ₹{parseFloat(quotation.current_negotiated_amount).toLocaleString()}
                   </span>
-                )}
+                )} */}
               </div>
 
               {/* Items Count */}
@@ -129,7 +131,7 @@ export function QuotationContainer({ quotations, userRole }: QuotationContainerP
               </div>
 
               {/* Negotiation Info */}
-              {quotation.total_negotiations && quotation.total_negotiations > 0 && (
+              {/* {quotation.total_negotiations && quotation.total_negotiations > 0 && (
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">
                     {quotation.total_negotiations} negotiation(s)
@@ -140,7 +142,7 @@ export function QuotationContainer({ quotations, userRole }: QuotationContainerP
                     </Badge>
                   )}
                 </div>
-              )}
+              )} */}
 
               {/* Actions */}
               <Button 

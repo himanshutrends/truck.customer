@@ -163,9 +163,9 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Weight</p>
                 <div className="space-y-1">
-                  <p className=" font-medium">{vehicle.weight.amount}</p>
+                  <p className=" font-medium">{vehicle.weight.amount}kg</p>
                   <p className=" font-bold">
-                    {vehicle.weight.rate} = {vehicle.weight.total}
+                    ₹{vehicle.weight.rate.toLocaleString()} = ₹{vehicle.weight.total.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -173,13 +173,13 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
                 <p className="text-sm text-muted-foreground">Delivery Type</p>
                 <div className="space-y-1">
                   <p className=" font-medium">{vehicle.deliveryType.type}</p>
-                  <p className=" font-bold">{vehicle.deliveryType.price}</p>
+                  <p className=" font-bold">₹{vehicle.deliveryType.price.toLocaleString()}</p>
                 </div>
               </div>
               <div></div> {/* Empty column for spacing */}
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Total</p>
-                <p className=" font-bold ">{vehicle.total}</p>
+                <p className=" font-bold ">₹{vehicle.total.toLocaleString()}</p>
               </div>
             </div>
           </CollapsibleContent>

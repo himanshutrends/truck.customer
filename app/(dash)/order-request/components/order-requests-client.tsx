@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { DataTable } from './order-request-data-table';
-import { getOrderRequests, OrderRequest } from '../server/actions/order-request';
+import { getOrderRequests } from '../server/actions/order-request';
+import { OrderRequest } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';

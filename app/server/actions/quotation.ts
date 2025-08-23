@@ -8,6 +8,7 @@ export interface QuotationRequest {
   vendorName: string;
   items: QuotationItem[];
   totalAmount: number;
+  customerSuggestedPrice?: number;
   searchParams: {
     originPinCode: string;
     destinationPinCode: string;
@@ -60,6 +61,7 @@ export async function createQuotationRequest(
       vendor_id: quotationData.vendorId,
       vendor_name: quotationData.vendorName,
       total_amount: quotationData.totalAmount,
+      customer_suggested_price: quotationData.customerSuggestedPrice || 0,
       origin_pincode: quotationData.searchParams.originPinCode,
       destination_pincode: quotationData.searchParams.destinationPinCode,
       pickup_date: quotationData.searchParams.pickupDate,

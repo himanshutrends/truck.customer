@@ -63,9 +63,10 @@ const getNavigationData = (userRole: UserRole): { navGroups: NavGroup[] } => {
           icon: IconBox,
         },
         {
-          title: userRole === 'customer' ? "My Order Requests" : "Order Requests",
+          title: "My Order Requests",
           url: "/order-request",
           icon: IconPackageExport,
+          roles: ['customer']
         },
         {
           title: "Search Shipments",
