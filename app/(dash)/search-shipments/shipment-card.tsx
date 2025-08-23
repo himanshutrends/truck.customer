@@ -53,7 +53,7 @@ export function ShipmentCard({
     onMoreClick?.(shipment.id)
   }
 
-  const handleQuoteSubmission = (quoteData: any) => {
+  const handleQuoteSubmission = (quoteData: unknown) => {
     console.log("Quote submitted:", quoteData)
     // Handle quote submission logic here
     onQuoteClick?.(shipment.id)

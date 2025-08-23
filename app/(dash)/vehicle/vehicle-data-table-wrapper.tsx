@@ -3,9 +3,9 @@
 import * as React from "react"
 import { DataTable } from "./data-table"
 import { ModalForm } from "@/components/modal-form"
-import { AddVehicleForm } from "./add-form"
+import { AddVehicleForm, VehicleFormData } from "./add-form"
 import { addVehicle } from "./server/actions/vehicle"
-import { Vehicle } from "@/lib/types"
+import { Vehicle, VehicleType } from "@/lib/types"
 import { toast } from "sonner"
 
 // Client component wrapper for the data table with modal functionality
@@ -19,12 +19,28 @@ export function VehicleDataTableWrapper({
   const [vehicles, setVehicles] = React.useState<Vehicle[]>(initialData)
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
 
-  const handleAddVehicle = async (vehicleData: Partial<Vehicle>) => {
+  const handleAddVehicle = async (formData: VehicleFormData) => {
     if (userRole !== 'vendor') {
       toast.error('Access denied', {
         description: 'Only vendors can add vehicles'
       })
       return
+    }
+    
+    // Transform form data to match Vehicle interface
+    const vehicleData: Partial<Vehicle> = {
+      truck_type: {
+        id: 1,
+        name: formData.vehicleType,
+        description: formData.vehicleType,
+        created_at: new Date().toISOString()
+      } as VehicleType,
+      registration_number: formData.vehicleNumber,
+      make: formData.vehicleModel,
+      model: formData.vehicleModel,
+      capacity: formData.maxLoad,
+      availability_status: 'available',
+      is_active: true,
     }
     
     try {

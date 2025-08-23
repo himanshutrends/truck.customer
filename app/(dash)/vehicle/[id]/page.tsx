@@ -14,13 +14,14 @@ import Image from "next/image"
 import { getVendorTruckById } from "../server/actions/vehicle"
 
 interface VehicleDetailProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function VehicleDetailPage({ params }: VehicleDetailProps) {
-  const response = await getVendorTruckById(params.id);
+  const resolvedParams = await params
+  const response = await getVendorTruckById(resolvedParams.id);
 
   if (!response.success || !response.data) {
     return (

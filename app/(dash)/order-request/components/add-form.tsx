@@ -26,8 +26,26 @@ import {
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
+interface OrderRequestFormData {
+  originPinCode: string;
+  destinationPinCode: string;
+  pickupDate: Date | undefined;
+  arrivalDate: Date | undefined;
+  weight: string;
+  weightUnit: string;
+  fee: string;
+  feeUnit: string;
+  vehicleType: string;
+  itemTransported: string;
+  packageType: string;
+  packageDimension: string;
+  packageDimensionUnit: string;
+  packageQuantity: string;
+  hasHazardousMaterials: boolean;
+}
+
 interface AddOrderRequestFormProps {
-  onSubmit: (data: any) => void
+  onSubmit: (data: OrderRequestFormData) => void
   onCancel: () => void
 }
 
@@ -75,7 +93,7 @@ export function AddOrderRequestForm({ onSubmit, onCancel }: AddOrderRequestFormP
         <div>
           <h3 className="text-sm font-medium mb-2">ORDER DETAILS</h3>
           <p className="text-sm text-muted-foreground mb-6">
-            Please provide the order's essential details, including the route, pickup and arrival dates and weight being transported
+            Please provide the order&apos;s essential details, including the route, pickup and arrival dates and weight being transported
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -223,7 +241,7 @@ export function AddOrderRequestForm({ onSubmit, onCancel }: AddOrderRequestFormP
         <div>
           <h3 className="text-sm font-medium mb-2">LOAD AND VEHICLE DETAILS</h3>
           <p className="text-sm text-muted-foreground mb-6">
-            Please provide the order's essential details, including the route, pickup and arrival dates and weight being transported
+            Please provide the order&apos;s essential details, including the route, pickup and arrival dates and weight being transported
           </p>
           
           <div className="space-y-4">

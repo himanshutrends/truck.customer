@@ -14,13 +14,14 @@ import Image from "next/image"
 import { getVendorDriverById } from "../server/actions/driver"
 
 interface DriverDetailProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function DriverDetailPage({ params }: DriverDetailProps) {
-  const response = await getVendorDriverById(params.id)
+  const resolvedParams = await params
+  const response = await getVendorDriverById(resolvedParams.id)
 
   if (!response.success || !response.data) {
     return (

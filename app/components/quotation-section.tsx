@@ -281,7 +281,7 @@ export function QuotationSection({ onClose }: QuotationSectionProps) {
               />
             </div>
             <p className="text-xs text-gray-500">
-              Leave empty to accept the vendor's quoted price
+              Leave empty to accept the vendor&apos;s quoted price
             </p>
           </div>
 

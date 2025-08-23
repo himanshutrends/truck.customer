@@ -13,9 +13,17 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+export interface DriverFormData {
+  driverName: string;
+  dateOfBirth: string;
+  aadhaarNumber: string;
+  maxLoad: string;
+  phoneNumber: string;
+}
+
 interface AddDriverFormProps {
-  onSubmit: (data: any) => void
-  onCancel: () => void
+  onSubmit: (data: DriverFormData) => void
+  onCancel?: () => void
 }
 
 export function AddDriverForm({ onSubmit, onCancel }: AddDriverFormProps) {
@@ -47,7 +55,7 @@ export function AddDriverForm({ onSubmit, onCancel }: AddDriverFormProps) {
       <div>
         <h3 className="text-sm font-medium mb-2">DRIVER DETAILS</h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Please provide the driver's essential details, including name, ID Proofs - Aadhar Card and Driver's Licence for our records.
+          Please provide the driver&apos;s essential details, including name, ID Proofs - Aadhar Card and Driver&apos;s Licence for our records.
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

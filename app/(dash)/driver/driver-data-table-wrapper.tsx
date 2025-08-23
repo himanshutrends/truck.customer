@@ -3,7 +3,7 @@
 import * as React from "react"
 import { DataTable } from "./data-table"
 import { ModalForm } from "@/components/modal-form"
-import { AddDriverForm } from "./add-form"
+import { AddDriverForm, DriverFormData } from "./add-form"
 import { addDriver, Driver } from "./server/actions/driver"
 import { toast } from "sonner"
 
@@ -18,12 +18,23 @@ export function DriverDataTableWrapper({
   const [drivers, setDrivers] = React.useState<Driver[]>(initialData)
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
 
-  const handleAddDriver = async (driverData: Partial<Driver>) => {
+  const handleAddDriver = async (formData: DriverFormData) => {
     if (userRole !== 'vendor') {
       toast.error('Access denied', {
         description: 'Only vendors can add drivers'
       })
       return
+    }
+    
+    // Transform form data to match Driver interface
+    const driverData: Partial<Driver> = {
+      name: formData.driverName,
+      phone_number: formData.phoneNumber,
+      license_number: formData.aadhaarNumber, // Using aadhaar as license for now
+      license_expiry_date: formData.dateOfBirth, // Using DOB as license expiry for now
+      experience_years: parseInt(formData.maxLoad) || 0, // Using maxLoad as experience for now
+      email: '', // Default email
+      is_available: true,
     }
     
     try {

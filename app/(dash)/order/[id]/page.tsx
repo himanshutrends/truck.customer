@@ -18,9 +18,9 @@ import {
 import Link from "next/link"
 
 interface OrderDetailProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 interface DeliveryStep {
@@ -192,8 +192,9 @@ const getOrderData = (id: string): OrderData | null => {
   return orders[id] || null
 }
 
-export default function OrderDetailPage({ params }: OrderDetailProps) {
-  const order = getOrderData(params.id)
+export default async function OrderDetailPage({ params }: OrderDetailProps) {
+  const resolvedParams = await params
+  const order = getOrderData(resolvedParams.id)
   
   if (!order) {
     return (
@@ -202,7 +203,7 @@ export default function OrderDetailPage({ params }: OrderDetailProps) {
           <Card className="mx-6">
             <CardContent className="p-6">
               <h1 className="text-xl font-semibold">Order not found</h1>
-              <p className="text-muted-foreground mt-2">The order you're looking for doesn't exist.</p>
+              <p className="text-muted-foreground mt-2">The order you&apos;re looking for doesn&apos;t exist.</p>
               <Link href="/order">
                 <Button variant="outline" className="mt-4">
                   <IconArrowLeft className="h-4 w-4 mr-2" />

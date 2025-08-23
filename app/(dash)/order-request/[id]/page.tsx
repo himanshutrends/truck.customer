@@ -14,7 +14,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { getOrderRequestById } from "./server/actions/order-request-detail"
 import { QuotationActions } from "./components/quotation-actions"
 
-interface OrderRequestDetailProps { params: { id: string } }
+interface OrderRequestDetailProps { 
+  params: Promise<{ id: string }> 
+}
 
 // Helper function to format date
 const formatDate = (dateString: string): string => {
@@ -41,7 +43,8 @@ const formatCurrency = (amount: string): string => {
 }
 
 export default async function OrderRequestDetailPage({ params }: OrderRequestDetailProps) {
-  const response = await getOrderRequestById(params.id)
+  const resolvedParams = await params
+  const response = await getOrderRequestById(resolvedParams.id)
 
   if (!response.success || !response.data) {
     return (

@@ -13,9 +13,17 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+export interface VehicleFormData {
+  vehicleType: string;
+  vehicleModel: string;
+  vehicleNumber: string;
+  maxLoad: string;
+  gpsNumber: string;
+}
+
 interface AddVehicleFormProps {
-  onSubmit: (data: any) => void
-  onCancel: () => void
+  onSubmit: (data: VehicleFormData) => void
+  onCancel?: () => void
 }
 
 export function AddVehicleForm({ onSubmit, onCancel }: AddVehicleFormProps) {
@@ -47,7 +55,7 @@ export function AddVehicleForm({ onSubmit, onCancel }: AddVehicleFormProps) {
       <div>
         <h3 className="text-sm font-medium mb-2">VEHICLE DETAILS</h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Please provide the truck's essential details, including registration, pollution compliance, and state permits for our records.
+          Please provide the truck&apos;s essential details, including registration, pollution compliance, and state permits for our records.
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

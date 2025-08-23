@@ -13,9 +13,9 @@ import {
 import Link from "next/link"
 
 interface InvoiceDetailProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 // Mock data - in real app this would come from API/database
@@ -94,8 +94,9 @@ const getInvoiceData = (id: string) => {
   return invoices[id as keyof typeof invoices] || null
 }
 
-export default function InvoiceDetailPage({ params }: InvoiceDetailProps) {
-  const invoice = getInvoiceData(params.id)
+export default async function InvoiceDetailPage({ params }: InvoiceDetailProps) {
+  const resolvedParams = await params
+  const invoice = getInvoiceData(resolvedParams.id)
   
   if (!invoice) {
     return (
@@ -104,7 +105,7 @@ export default function InvoiceDetailPage({ params }: InvoiceDetailProps) {
           <Card className="mx-6">
             <CardContent className="p-6">
               <h1 className="text-xl font-semibold">Invoice not found</h1>
-              <p className="text-muted-foreground mt-2">The invoice you're looking for doesn't exist.</p>
+              <p className="text-muted-foreground mt-2">The invoice you&apos;re looking for doesn&apos;t exist.</p>
               <Link href="/invoice">
                 <Button variant="outline" className="mt-4">
                   <IconArrowLeft className="h-4 w-4 mr-2" />

@@ -283,7 +283,7 @@ export function SearchSection({ truckTypes, onSearch, isLoading = false }: Searc
               key={option.value}
               variant={urgencyLevel === option.value ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setUrgencyLevel(option.value as any)}
+              onClick={() => setUrgencyLevel(option.value as 'standard' | 'express' | 'urgent')}
               className="text-xs"
             >
               {option.label}
